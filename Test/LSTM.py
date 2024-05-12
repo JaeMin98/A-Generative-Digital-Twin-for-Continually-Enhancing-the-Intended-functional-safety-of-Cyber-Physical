@@ -28,9 +28,9 @@ class LSTMModel(nn.Module):
 
 # 예제 사용
 # input_size: N, hidden_size: 임의로 20, num_layers: 1
-model = LSTMModel(input_size=50, hidden_size=20, num_layers=1)
+model = LSTMModel(input_size=500, hidden_size=128, num_layers=1)
 # 예시 데이터 (batch_size=3, sequence_length=5, input_size=N)
-x_example = torch.randn(3, 5, 50)
+x_example = torch.randn(3, 5, 500)
 output = model(x_example)
 
 print(output)  # 최종 출력, 크기는 (3, 10)

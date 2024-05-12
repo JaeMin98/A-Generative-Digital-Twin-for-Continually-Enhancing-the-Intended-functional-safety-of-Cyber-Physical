@@ -53,6 +53,6 @@ class BSplineVisualizer(BSpline):
         plt.show()
 
 # 사용 예시
-control_points = [(0, 0), (1, 2), (2, 3), (4, 0), (5, -1)]
+control_points = [(0, 0), (1, 5), (2, 8), (4, 0), (5, -1)]
 spline_visualizer = BSplineVisualizer(control_points)
 spline_visualizer.plot()
