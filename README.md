@@ -90,3 +90,7 @@ pip install tqdm
 4. Convert Option이 주어지면 'Convert-In-Place' 선택하기 (선택지가 없으면 좌측 하단의 see more 클릭)
 5. 프로젝트가 열리면 하단 에서 'DARL' 더블 클릭
 6. 상단 바에서 'Play'버튼 우측에 드롭박스를 열어 'Standalone game' 선택 후 실행
+
+
+### ※ 차량 위치 변경 방법 🌟
+3-2에서 설정한 setting.json의 파일에서 각 차량의 x,y를 변경 후 환경을 재실행
