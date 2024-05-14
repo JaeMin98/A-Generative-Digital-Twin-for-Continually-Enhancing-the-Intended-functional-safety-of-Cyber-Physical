@@ -79,6 +79,20 @@ pip install matplotlib==3.3.4
 pip install tqdm
 ```
 
+가상환경 설정 후 CUDA가 잡히지 않는 다면
+```bash
+conda install -c anaconda cudatoolkit==[원하는 버전]
+ex) conda install -c anaconda cudatoolkit==10.1.243
+
+# CUDA 버전을 못찾는 경우 -c 뒤에 "conda-forge" 옵션 추가
+-c conda-forge
+
+# CUDA 먼저 설치하면 아래 커맨드로 어느 정도 상호호환되는 cudnn이 알아서 설치되긴한다.
+conda install -c anaconda cudnn
+
+# CUDA(cudatoolkit) version, CUDNN(cudnn) version 확인
+conda list
+```
 ### 5. AirSim 실행 🌟
 
 ```bash
