@@ -75,10 +75,12 @@ class ENV():
         elif throttle < 0.25: throttle = 0.25
         self.target_car_controls.throttle = throttle
         self.target_car_controls.brake = brake
+
         try:
             self.car.setCarControls(self.target_car_controls, "A_Target")
         except:
             print("AIRSIM ERROR_02 : request failed")
+
     def set_car_control_of_adversarial(self, throttle, steering, brake):
         self.adversarial_car_controls.throttle = throttle
         self.adversarial_car_controls.steering = steering
@@ -87,6 +89,7 @@ class ENV():
             self.car.setCarControls(self.adversarial_car_controls, "B_Adversarial")
         except:
             print("AIRSIM ERROR_03 : request failed")
+
     def set_car_control_of_front(self, throttle, brake):
         self.front_car_controls.throttle = throttle
         self.front_car_controls.brake = brake
@@ -94,20 +97,7 @@ class ENV():
             self.car.setCarControls(self.front_car_controls, "C_Front")
         except:
             print("AIRSIM ERROR_04 : request failed")
-    def set_car_control_of_front_random(self):
-        front_throttle_value = self.front_car_controls.throttle
-        change = (random.random() - 0.5) * 0.1
-        front_throttle_value += change
-        # 양 극에 도달했을 때의 처리를 변경
-        if front_throttle_value > 0.90:
-            front_throttle_value -= change  # 최대를 넘으면 변화량을 빼서 조정
-        elif front_throttle_value < 0.30:
-            front_throttle_value -= change  # 최소를 넘으면 변화량을 빼서 조정
-        self.front_car_controls.throttle = front_throttle_value
-        try:
-            self.car.setCarControls(self.front_car_controls, "C_Front")
-        except:
-            print("AIRSIM ERROR_05 : request failed")
+
 #----------------------------------------------------------
 #                 5. reward function
 #----------------------------------------------------------
@@ -179,6 +169,7 @@ class ENV():
         state = A_state + B_state + C_state
         reward, done, success = self.get_reward(adversarial_car_state, target_car_state)
         return state, reward, done, success
+    
     def step(self, action):
         # 쓰로틀 조정
         throttle = float(action[0])
@@ -200,30 +191,7 @@ class ENV():
                 break
             except:
                 print("AIRSIM ERROR_08 : request failed")
-#----------------------------------------------------------
-#                7. methods for Ego agent
-#----------------------------------------------------------
-    def get_Ego_state(self):
-        target_car_state = self.car.getCarState("A_Target")
-        state = np.zeros(11)
-        for i in range (9):
-            sensor_name = "Distance_"
-            sensor_name = sensor_name + str(i)
-            state[i] = round(self.car.getDistanceSensorData(distance_sensor_name=sensor_name, vehicle_name="A_Target").distance, 3)
-        state[9] = round(target_car_state.speed, 3)
-        state[10] = target_car_state.gear
-        state = np.reshape(state, [1, 11])
-    # sate = [[ Laser sensor 9ea + target_speed + target_gear ]] <--numpy array
-        return state.tolist()[0]
-    def step_for_Ego(self, action):
-        if( 0.1 <= action[1] ): Is_brake = 0
-        else: Is_brake = 1
-        while(True):
-            try:
-                self.set_car_control_of_target(float(action[0]), Is_brake)
-                break
-            except:
-                print("AIRSIM ERROR_09 : request failed")
+
 if __name__ == "__main__":
     k = ENV()
     k.reset()

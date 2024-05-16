@@ -26,16 +26,6 @@ Adversarial_agent = SAC(env.observation_space_size, env.action_space, args)
 Adversarial_agent.load_checkpoint("Adv_agent_model/Desktop_scps.tar")
 
 
-        # checkpoint = torch.load(path, map_location=lambda storage, loc: storage)
-        # agent.policy.load_state_dict(checkpoint['model'])
-
-# Ego_agent
-Ego_args = args
-Ego_args.hidden_size = 128
-
-Ego_agent = SAC(env.observation_space_size_of_ego, env.action_space_of_ego, Ego_args)
-Ego_agent.load_checkpoint("ego_agent_model/ego_agent.tar")
-
 #Tesnorboard
 writer = SummaryWriter('./runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
                                                              args.policy, "autotune" if args.automatic_entropy_tuning else ""))
@@ -55,15 +45,14 @@ for i_episode in itertools.count(1):
     episode_steps = 0
     done = False
     state = env.reset()
-
+    env.set_car_control_of_target(0.6, 0)
+    env.set_car_control_of_front(0.6, 0)
+    
     while not done:
         if args.start_steps > total_numsteps:
             action = env.action_space.sample()  # Sample random action
         else:
             action = Adversarial_agent.select_action(state)  # Sample action from policy
-
-        Ego_state = env.get_Ego_state()
-        Ego_action = Ego_agent.select_action(Ego_state)
 
         if len(memory) > args.batch_size:
             # Number of updates per step in env
@@ -80,10 +69,6 @@ for i_episode in itertools.count(1):
 
         
         env.step(action) # Step
-        env.step_for_Ego(Ego_action)
-        
-        if total_numsteps%100 == 0 :
-            env.set_car_control_of_front_random()
 
         time.sleep(0.03)
         

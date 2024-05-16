@@ -23,20 +23,22 @@ class ENV():
     # base parameter setting
         self._max_episode_steps = 256
 
-        try:
-            self.car = airsim.CarClient()
-            self.car.confirmConnection()
+        while(1):
+            try:
+                self.car = airsim.CarClient()
+                self.car.confirmConnection()
 
-            self.car.enableApiControl(True, "A_Target")
-            self.car.enableApiControl(True, "B_Adversarial")
-            self.car.enableApiControl(True, "C_Front")
-            
+                self.car.enableApiControl(True, "A_Target")
+                self.car.enableApiControl(True, "B_Adversarial")
+                self.car.enableApiControl(True, "C_Front")
+                
 
-            self.target_car_controls = airsim.CarControls("A_Target")
-            self.adversarial_car_controls = airsim.CarControls("B_Adversarial")
-            self.front_car_controls = airsim.CarControls("C_Front")
-        except:
-            print("AIRSIM ERROR_01 : request failed")
+                self.target_car_controls = airsim.CarControls("A_Target")
+                self.adversarial_car_controls = airsim.CarControls("B_Adversarial")
+                self.front_car_controls = airsim.CarControls("C_Front")
+                break
+            except:
+                print("AIRSIM ERROR_01 : request failed")
 
         self.steering_scale = 0.15
 
