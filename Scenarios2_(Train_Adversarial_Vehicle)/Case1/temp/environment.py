@@ -64,9 +64,9 @@ class ENV():
 #----------------------------------------------------------
     def __init__(self):
     # define state and action space (전진, 회전, 브레이크)
-        self.action_space = Box(low=0.0, high=1.0, shape=(3,), dtype=np.float32)
+        self.action_space = Box(low=0.0, high=1.0, shape=(3,), dtype=np.float_)
         self.observation_space_size = 7
-        self.action_space_of_ego = Box(low=0.0, high=1.0, shape=(2,), dtype=np.float32)
+        self.action_space_of_ego = Box(low=0.0, high=1.0, shape=(2,), dtype=np.float_)
         self.observation_space_size_of_ego = 11
     # base parameter setting
         self._max_episode_steps = 8192 * 2

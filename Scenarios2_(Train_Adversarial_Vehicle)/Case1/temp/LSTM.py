@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import numpy as np
 
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers):
@@ -11,7 +12,7 @@ class LSTMModel(nn.Module):
         """
         super(LSTMModel, self).__init__()
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
-        self.fc = nn.Linear(hidden_size, 10)  # 최종 출력을 10개 feature로 압축
+        self.fc = nn.Linear(hidden_size, 1)  # 최종 출력을 10개 feature로 압축
 
     def forward(self, x):
         """
@@ -28,9 +29,12 @@ class LSTMModel(nn.Module):
 
 # 예제 사용
 # input_size: N, hidden_size: 임의로 20, num_layers: 1
-model = LSTMModel(input_size=500, hidden_size=128, num_layers=1)
+model = LSTMModel(input_size=4, hidden_size=128, num_layers=1)
 # 예시 데이터 (batch_size=3, sequence_length=5, input_size=N)
-x_example = torch.randn(3, 5, 500)
+# x_example = torch.randn(1, 4)
+x_example = torch.tensor([[-1.0715,  0.1237, -0.1165, -0.2732]])
+print(x_example)  # 최종 출력, 크기는 (3, 10)
+
 output = model(x_example)
 
 print(output)  # 최종 출력, 크기는 (3, 10)

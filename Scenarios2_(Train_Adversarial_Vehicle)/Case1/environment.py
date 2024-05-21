@@ -17,13 +17,13 @@ class ENV():
 #----------------------------------------------------------
     def __init__(self):
     # define state and action space (전진, 회전, 브레이크)
-        low = np.array([-3.0, -3.0, -1.0, -1.0, -1.0, 0.0])
-        high = np.array([3.0, 3.0, 1.0, 1.0, 1.0, 1.0])
-        self.action_space = Box(low=low, high=high,shape=(6,), dtype=np.float32)
+        low = np.array([-20.0, -10.0, -0.15, -0.15, -0.15, 0.5])
+        high = np.array([-10.0, 10.0, 0.15, 0.15, 0.15, 1.0])
+        self.action_space = Box(low=low, high=high,shape=(6,), dtype=np.float_)
         self.observation_space_size = 4
         self.num_of_steering = 3
 
-        self.action_space_of_ego = Box(low=0.0, high=1.0, shape=(2,), dtype=np.float32)
+        self.action_space_of_ego = Box(low=0.0, high=1.0, shape=(2,), dtype=np.float_)
         self.observation_space_size_of_ego = 11
 
     # base parameter setting
@@ -52,7 +52,7 @@ class ENV():
         self.collision_info_2 = False
 
         self.car.reset()
-        self.set_position(x,y)
+        self.set_position(float(x),float(y))
 
         self.set_car_control_of_target(0.6, 0)
         self.set_car_control_of_adversarial(0.6, 0, 0)
@@ -68,11 +68,11 @@ class ENV():
 
         self.car.simSetObjectPose("B_Adversarial", pose, True)
 
-        position = airsim.Vector3r(-100, 0, -3)
-        orientation = airsim.Quaternionr(0, 0, 0, 1)
-        pose = airsim.Pose(position, orientation)
+        # position = airsim.Vector3r(-100, 0, -3)
+        # orientation = airsim.Quaternionr(0, 0, 0, 1)
+        # pose = airsim.Pose(position, orientation)
 
-        self.car.simSetObjectPose("C_Front", pose, True)
+        # self.car.simSetObjectPose("C_Front", pose, True)
 
 #----------------------------------------------------------
 #                   3. get state
@@ -136,11 +136,10 @@ class ENV():
 
         done,success = False, False
 
-
-
         reward_c = 0
         if (self.collision_info_1 == True) and (self.collision_info_2 == True):
-                reward_c = 1
+                print("################################")
+                reward_c = 10
                 done = True
                 success = True
 

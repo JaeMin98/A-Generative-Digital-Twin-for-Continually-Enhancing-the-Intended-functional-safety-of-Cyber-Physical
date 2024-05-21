@@ -7,6 +7,7 @@ import time
 from sac import SAC
 from torch.utils.tensorboard import SummaryWriter
 
+import itertools
 from replay_memory import ReplayMemory
 import config
 import environment
@@ -23,7 +24,7 @@ np.random.seed(123456)
 
 # Adversarial_agent
 # Adversarial_agent = SAC(env.observation_space_size, env.action_space, args)
-Adversarial_agent = SAC(90, env.action_space, args)
+Adversarial_agent = SAC(90*4, env.action_space, args)
 
 
 #Tesnorboard
@@ -38,8 +39,16 @@ memory = ReplayMemory(args.replay_size, 123456)
 updates = 0
 
 success_list = []
+state= None
 
 for i_episode in itertools.count(1):
+    if(state == None):
+        action = env.action_space.sample()  # Sample random action
+        state, _, _, _ = env.step(action) # Step
+        state = list(itertools.chain(*state))
+        print(state)
+        print(len(state))
+
     if args.start_steps > i_episode:
         action = env.action_space.sample()  # Sample random action
     else:
@@ -59,15 +68,11 @@ for i_episode in itertools.count(1):
             updates += 1
 
         
-    env.step(action) # Step
-
-    time.sleep(0.03)
-    
-    next_state, reward, done, success = env.observation()
+    next_state, reward, done, success = env.step(action) # Step
+    next_state = list(itertools.chain(*next_state))
     done, success = False, False
 
-
-    memory.push(state, action, reward, next_state)
+    memory.push(state, action, reward, next_state, done)
 
     state = next_state
 
