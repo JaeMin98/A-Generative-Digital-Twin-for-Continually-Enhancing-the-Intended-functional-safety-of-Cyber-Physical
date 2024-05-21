@@ -24,7 +24,7 @@ np.random.seed(123456)
 
 # Adversarial_agent
 # Adversarial_agent = SAC(env.observation_space_size, env.action_space, args)
-Adversarial_agent = SAC(90*4, env.action_space, args)
+Adversarial_agent = SAC(90*5, env.action_space, args)
 
 
 #Tesnorboard
@@ -42,12 +42,7 @@ success_list = []
 state= None
 
 for i_episode in itertools.count(1):
-    if(state == None):
-        action = env.action_space.sample()  # Sample random action
-        state, _, _, _ = env.step(action) # Step
-        state = list(itertools.chain(*state))
-        print(state)
-        print(len(state))
+    state = np.ones(90*5)
 
     if args.start_steps > i_episode:
         action = env.action_space.sample()  # Sample random action
@@ -74,8 +69,6 @@ for i_episode in itertools.count(1):
 
     memory.push(state, action, reward, next_state, done)
 
-    state = next_state
-
     #success rate 계산
     success_list.append(success)
     average_num = 20
@@ -92,6 +85,6 @@ for i_episode in itertools.count(1):
 
     Adversarial_agent.save_model(model_path + str(i_episode)+".tar")
 
-    print("Episode: {}, reward: {}".format(i_episode, round(reward, 2)))
+    print("Episode: {}, reward: {}, actions: [{}, {}, {}, {}, {}, {}]".format(i_episode, round(reward, 2), action[0], action[1], action[2], action[3], action[4], action[5]))
 
 env.reset()

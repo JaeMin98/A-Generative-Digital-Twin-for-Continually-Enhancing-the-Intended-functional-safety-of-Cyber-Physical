@@ -19,8 +19,13 @@ class ENV():
     # define state and action space (전진, 회전, 브레이크)
         low = np.array([-20.0, -10.0, -0.15, -0.15, -0.15, 0.5])
         high = np.array([-10.0, 10.0, 0.15, 0.15, 0.15, 1.0])
+
+        # low = np.array([-20.0, -10.0, -1.0, -1.0, -1.0, 0.5])
+        # high = np.array([-10.0, 10.0, 1.0, 1.0, 1.0, 1.0])
         self.action_space = Box(low=low, high=high,shape=(6,), dtype=np.float_)
-        self.observation_space_size = 4
+
+        # self.action_space = Box(low=0.0, high=1.0, shape=(6,), dtype=np.float_)
+        self.observation_space_size = 5
         self.num_of_steering = 3
 
         self.action_space_of_ego = Box(low=0.0, high=1.0, shape=(2,), dtype=np.float_)
@@ -58,8 +63,6 @@ class ENV():
         self.set_car_control_of_adversarial(0.6, 0, 0)
         self.set_car_control_of_front(0.6, 0)
         time.sleep(2)
-        state, _, __, ___ = self.observation()
-        return state
     
     def set_position(self,x,y):
         position = airsim.Vector3r(x, y, -3)
@@ -128,7 +131,7 @@ class ENV():
 #----------------------------------------------------------
 #                 5. reward function
 #----------------------------------------------------------
-    def get_reward(self, action):
+    def get_reward(self, action, observations):
         delta_steering = 0
         for i in range( 2 , (2+self.num_of_steering) ):
             delta_steering += abs(action[i])
@@ -138,17 +141,28 @@ class ENV():
 
         reward_c = 0
         if (self.collision_info_1 == True) and (self.collision_info_2 == True):
-                print("################################")
-                reward_c = 10
+                print("################### CRASH ###################")
+                reward_c = 1
                 done = True
                 success = True
 
-        reward = reward_c - reward_a
+        distance_list = []
+        for item in observations:
+            distance_list.append(item[-1])
+
+        reward_m = -(sum(distance_list)/len(distance_list))
+
+        reward = reward_m + 10*reward_c - 10*reward_a
 
         return reward,done,success
 #----------------------------------------------------------
 #         6. observation & step for learning
 #----------------------------------------------------------
+
+    def calculate_distance(self, x, y, a, b):
+        distance = math.sqrt((x - a) ** 2 + (y - b) ** 2)
+        return distance
+
     def observation(self):
         while(True):
             try:
@@ -167,6 +181,9 @@ class ENV():
 
         # state = A_state + B_state + M
         state = A_state + B_state
+
+        distance = self.calculate_distance(A_state[0], A_state[1], B_state[0], B_state[1])
+        state.append(distance)
 
         return state
     
@@ -195,7 +212,7 @@ class ENV():
         time.sleep(1)
         self.car.reset()
 
-        reward, done, success = self.get_reward(action)
+        reward, done, success = self.get_reward(action, observations)
 
         return observations, reward, done, success
 
