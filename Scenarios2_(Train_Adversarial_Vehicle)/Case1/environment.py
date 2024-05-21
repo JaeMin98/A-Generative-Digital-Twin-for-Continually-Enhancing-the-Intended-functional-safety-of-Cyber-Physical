@@ -7,7 +7,7 @@ import time
 import math
 import json
 from gym.spaces import Box
-
+import csv
 
 
 
@@ -17,11 +17,14 @@ class ENV():
 #----------------------------------------------------------
     def __init__(self):
     # define state and action space (전진, 회전, 브레이크)
-        low = np.array([-20.0, -10.0, -0.15, -0.15, -0.15, 0.5])
-        high = np.array([-10.0, 10.0, 0.15, 0.15, 0.15, 1.0])
+        # steering_low, steering_high = -0.15, 0.15
+        # low = np.array([-20.0, -20.0, steering_low, steering_low, steering_low, 0.5])
+        # high = np.array([-10.0, -10.0, steering_high, steering_high, steering_high, 1.0])
+        # self.action_space = Box(low=low, high=high,shape=(6,), dtype=np.float_)
 
-        # low = np.array([-20.0, -10.0, -1.0, -1.0, -1.0, 0.5])
-        # high = np.array([-10.0, 10.0, 1.0, 1.0, 1.0, 1.0])
+        steering_low, steering_high = -0.15, 0.15
+        low = np.array([-20.0, 10.0, steering_low, steering_low, steering_low, 0.5])
+        high = np.array([-10.0, 20.0, steering_high, steering_high, steering_high, 1.0])
         self.action_space = Box(low=low, high=high,shape=(6,), dtype=np.float_)
 
         # self.action_space = Box(low=0.0, high=1.0, shape=(6,), dtype=np.float_)
@@ -33,6 +36,9 @@ class ENV():
 
     # base parameter setting
         self._max_episode_steps = 256
+
+
+        self.figure_data = []
 
         try:
             self.car = airsim.CarClient()
@@ -53,9 +59,6 @@ class ENV():
 #                     2. reset
 #----------------------------------------------------------
     def reset(self, x,y):
-        self.collision_info_1 = False
-        self.collision_info_2 = False
-
         self.car.reset()
         self.set_position(float(x),float(y))
 
@@ -163,6 +166,35 @@ class ENV():
         distance = math.sqrt((x - a) ** 2 + (y - b) ** 2)
         return distance
 
+    def write_figure_data(self, file_path):
+        column_names = ['IsCrash', 'A.X', 'A.Y', 'A.Pitch', 'A.Roll', 'A.Yaw', 'B.X', 'B.Y', 'B.Pitch', 'B.Roll', 'B.Yaw', 'C.X', 'C.Y', 'C.Pitch', 'C.Roll', 'C.Yaw']
+
+        with open(file_path, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(column_names)
+
+            for item in self.figure_data:
+                writer.writerow(item)
+
+    def update_figure_data(self, vehicle_states):
+
+        temp_data = []
+
+        if(self.collision_info_1 and self.collision_info_2): IsCrash = True
+        else: IsCrash = False
+        temp_data.append(IsCrash)
+
+        for vehicle_state in vehicle_states:
+            position = vehicle_state.kinematics_estimated.position
+            x, y = position.x_val, position.y_val
+
+            orientation = vehicle_state.kinematics_estimated.orientation
+            pitch, roll, yaw = airsim.to_eularian_angles(orientation)
+
+            temp_data += [x, y, pitch, roll, yaw]
+
+        self.figure_data.append(temp_data)
+
     def observation(self):
         while(True):
             try:
@@ -172,12 +204,16 @@ class ENV():
         
                 target_car_state = self.car.getCarState("A_Target")
                 adversarial_car_state = self.car.getCarState("B_Adversarial")
+                front_car_state = self.car.getCarState("C_Front")
 
                 A_state = self.get_state_of_target(target_car_state)
                 B_state = self.get_state_of_adversarial(adversarial_car_state)
+
+                self.update_figure_data((target_car_state, adversarial_car_state, front_car_state))
                 break
             except:
                 print("AIRSIM ERROR_07 : request failed")
+
 
         # state = A_state + B_state + M
         state = A_state + B_state
@@ -188,6 +224,10 @@ class ENV():
         return state
     
     def step(self, action):
+        self.figure_data = []
+        self.collision_info_1 = False
+        self.collision_info_2 = False
+
         self.reset(action[0], action[1])
 
         observations = []

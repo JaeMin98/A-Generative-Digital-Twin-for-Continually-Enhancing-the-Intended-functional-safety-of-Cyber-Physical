@@ -62,7 +62,6 @@ for i_episode in itertools.count(1):
             writer.add_scalar('entropy_temprature/alpha', alpha, updates)
             updates += 1
 
-        
     next_state, reward, done, success = env.step(action) # Step
     next_state = list(itertools.chain(*next_state))
     done, success = False, False
@@ -82,8 +81,9 @@ for i_episode in itertools.count(1):
     writer.add_scalar('score/train', reward, i_episode)
     writer.add_scalar('success_rate/train', success_rate, i_episode)
     
-
-    Adversarial_agent.save_model(model_path + str(i_episode)+".tar")
+    if (env.collision_info_1 == True) and (env.collision_info_2 == True):
+        Adversarial_agent.save_model(model_path + str(i_episode)+".tar")
+        env.write_figure_data(model_path + str(i_episode)+".csv")
 
     print("Episode: {}, reward: {}, actions: [{}, {}, {}, {}, {}, {}]".format(i_episode, round(reward, 2), action[0], action[1], action[2], action[3], action[4], action[5]))
 
