@@ -100,6 +100,7 @@ class ENV():
         current_state_of_adversarial_car.append(  round(adversarial_car_state.kinematics_estimated.position.x_val,3)  )
         current_state_of_adversarial_car.append(  round(adversarial_car_state.kinematics_estimated.position.y_val,3)  )
         return current_state_of_adversarial_car
+    
 #----------------------------------------------------------
 #                  4. control car
 #----------------------------------------------------------
