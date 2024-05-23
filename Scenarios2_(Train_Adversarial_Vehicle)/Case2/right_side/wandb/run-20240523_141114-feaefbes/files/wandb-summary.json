@@ -1,0 +1,1 @@
+{"episode/score": -23.470088455107927, "_timestamp": 1716448755.7937272, "episode/success_rate": 25.0, "_runtime": 7681.690087080002, "_step": 635, "Network/critic_1": 165.01918029785156, "Network/critic_2": 156.64382934570312, "Network/policy": 25.77436065673828, "Network/entropy_loss": 0.0, "Network/alpha": 0.20000000298023224}

@@ -1,0 +1,27 @@
+2024-05-23 09:34:12,362 INFO    MainThread:226179 [wandb_setup.py:_flush():76] Current SDK version is 0.17.0
+2024-05-23 09:34:12,362 INFO    MainThread:226179 [wandb_setup.py:_flush():76] Configure stats pid to 226179
+2024-05-23 09:34:12,362 INFO    MainThread:226179 [wandb_setup.py:_flush():76] Loading settings from /home/smartcps/.config/wandb/settings
+2024-05-23 09:34:12,362 INFO    MainThread:226179 [wandb_setup.py:_flush():76] Loading settings from /home/smartcps/AirSim/PythonClient/Create_adversarial_path_for_vehicle_in_AirSim/Scenarios2_(Train_Adversarial_Vehicle)/Case2/right_side/wandb/settings
+2024-05-23 09:34:12,362 INFO    MainThread:226179 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2024-05-23 09:34:12,362 INFO    MainThread:226179 [wandb_setup.py:_flush():76] Applying setup settings: {'_disable_service': False}
+2024-05-23 09:34:12,362 INFO    MainThread:226179 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'Scenarios2_(Train_Adversarial_Vehicle)/Case2/right_side/main.py', 'program_abspath': '/home/smartcps/AirSim/PythonClient/Create_adversarial_path_for_vehicle_in_AirSim/Scenarios2_(Train_Adversarial_Vehicle)/Case2/right_side/main.py', 'program': '/home/smartcps/AirSim/PythonClient/Create_adversarial_path_for_vehicle_in_AirSim/Scenarios2_(Train_Adversarial_Vehicle)/Case2/right_side/main.py'}
+2024-05-23 09:34:12,362 INFO    MainThread:226179 [wandb_setup.py:_flush():76] Applying login settings: {}
+2024-05-23 09:34:12,362 INFO    MainThread:226179 [wandb_init.py:_log_setup():520] Logging user logs to /home/smartcps/AirSim/PythonClient/Create_adversarial_path_for_vehicle_in_AirSim/Scenarios2_(Train_Adversarial_Vehicle)/Case2/right_side/wandb/run-20240523_093412-v11cwk3o/logs/debug.log
+2024-05-23 09:34:12,362 INFO    MainThread:226179 [wandb_init.py:_log_setup():521] Logging internal logs to /home/smartcps/AirSim/PythonClient/Create_adversarial_path_for_vehicle_in_AirSim/Scenarios2_(Train_Adversarial_Vehicle)/Case2/right_side/wandb/run-20240523_093412-v11cwk3o/logs/debug-internal.log
+2024-05-23 09:34:12,362 INFO    MainThread:226179 [wandb_init.py:init():560] calling init triggers
+2024-05-23 09:34:12,363 INFO    MainThread:226179 [wandb_init.py:init():567] wandb.init called with sweep_config: {}
+config: {'env_name': 'car', 'policy': 'Gaussian', 'eval': False, 'gamma': 0.999, 'tau': 0.005, 'lr': 0.00015, 'alpha': 0.2, 'automatic_entropy_tuning': False, 'seed': 123456, 'batch_size': 32, 'num_steps': 10000, 'hidden_size': 64, 'updates_per_step': 1, 'start_steps': 32, 'target_update_interval': 1, 'replay_size': 1000000, 'cuda': False}
+2024-05-23 09:34:12,363 INFO    MainThread:226179 [wandb_init.py:init():610] starting backend
+2024-05-23 09:34:12,363 INFO    MainThread:226179 [wandb_init.py:init():614] setting up manager
+2024-05-23 09:34:12,364 INFO    MainThread:226179 [backend.py:_multiprocessing_setup():105] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2024-05-23 09:34:12,366 INFO    MainThread:226179 [wandb_init.py:init():622] backend started and connected
+2024-05-23 09:34:12,370 INFO    MainThread:226179 [wandb_init.py:init():711] updated telemetry
+2024-05-23 09:34:12,383 INFO    MainThread:226179 [wandb_init.py:init():744] communicating run to backend with 90.0 second timeout
+2024-05-23 09:34:12,884 INFO    MainThread:226179 [wandb_run.py:_on_init():2396] communicating current version
+2024-05-23 09:34:12,942 INFO    MainThread:226179 [wandb_run.py:_on_init():2405] got version response 
+2024-05-23 09:34:12,942 INFO    MainThread:226179 [wandb_init.py:init():795] starting run threads in backend
+2024-05-23 09:34:15,962 INFO    MainThread:226179 [wandb_run.py:_console_start():2374] atexit reg
+2024-05-23 09:34:15,962 INFO    MainThread:226179 [wandb_run.py:_redirect():2229] redirect: wrap_raw
+2024-05-23 09:34:15,962 INFO    MainThread:226179 [wandb_run.py:_redirect():2294] Wrapping output streams.
+2024-05-23 09:34:15,962 INFO    MainThread:226179 [wandb_run.py:_redirect():2319] Redirects installed.
+2024-05-23 09:34:15,964 INFO    MainThread:226179 [wandb_init.py:init():838] run started, returning control to user process

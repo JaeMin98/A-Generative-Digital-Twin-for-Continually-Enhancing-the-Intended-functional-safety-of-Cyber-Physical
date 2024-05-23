@@ -24,15 +24,6 @@ def read_csv(file_path):
 
     return (csv_data)
 
-def calculate_yaw(path):
-    yaw_angles = []
-    for i in range(len(path) - 1):
-        dx = path[i + 1][0] - path[i][0]
-        dy = path[i + 1][1] - path[i][1]
-        yaw = math.atan2(dy, dx)
-        yaw_angles.append(yaw)
-    yaw_angles.append(yaw_angles[-1])  # 마지막 yaw 값은 이전 값으로 동일하게 설정
-    return np.array(yaw_angles)
 
 def plot_figure(csv_data,figure_name):
     w=15
@@ -60,18 +51,19 @@ def plot_figure(csv_data,figure_name):
     ax.plot(blue_path[:, 0], blue_path[:, 1], 'b-', linewidth=path_line_width, zorder=path_line_zorder)
     ax.plot(green_path[:, 0], green_path[:, 1], 'g-', linewidth=path_line_width, zorder=path_line_zorder)
 #-----------------------------------------------------------------------------------------------------------------------------
-    red_yaws = calculate_yaw(red_path)
-    blue_yaws = calculate_yaw(blue_path)
-    green_yaws = calculate_yaw(green_path)
+    red_orientation = np.array([[row[3], row[4], row[5]] for row in csv_data]) # Pith, Roll, Yaw
+    blue_orientation = np.array([[row[8], row[9], row[10]] for row in csv_data]) # Pith, Roll, Yaw
+    green_orientation = np.array([[row[13], row[14], row[15]] for row in csv_data]) # Pith, Roll, Yaw
 
     # 자동차 그리기 함수 (orientation 포함)
-    def draw_car(ax, position, yaw, color):
+    def draw_car(ax, position, orientation, color):
         scale = 2.5
         car_width, car_height = 4 * scale, 3 * scale
         car_zorder = 4
+        yaw = orientation[2]
         
         # 변환 설정
-        t = transforms.Affine2D().rotate_around(position[0], position[1], yaw) + ax.transData
+        t = transforms.Affine2D().rotate_deg_around(position[0], position[1], np.degrees(yaw)) + ax.transData
         car = patches.Rectangle((position[0] - car_width / 2, position[1] - car_height / 2), 
                                 car_width, car_height, linewidth=2.5, alpha=0.5, color=color, zorder=car_zorder,
                                 transform=t)
@@ -89,11 +81,11 @@ def plot_figure(csv_data,figure_name):
     
 
     for i in range(0, len(green_path)):
-        if(i == 0) or (i == C_index) or (i % 10 == 0): draw_car(ax, green_path[i], green_yaws[i], 'green')
+        if(i == 0) or (i == C_index) or (i%10 == 0): draw_car(ax, green_path[i], green_orientation[i], 'green')
     for i in range(0, len(red_path)):
-        if(i == 0) or (i == C_index) or (i % 10 == 0): draw_car(ax, red_path[i], red_yaws[i], 'red')
+        if(i == 0) or (i == C_index) or (i%10 == 0): draw_car(ax, red_path[i], red_orientation[i], 'red')
     for i in range(0, len(blue_path)):
-        if(i == 0) or (i == C_index) or (i % 10 == 0): draw_car(ax, blue_path[i], blue_yaws[i], 'blue')
+        if(i == 0) or (i == C_index) or (i%10 == 0): draw_car(ax, blue_path[i], -blue_orientation[i], 'blue')
 #-----------------------------------------------------------------------------------------------------------------------------
     # 충돌 지점 그리기
     collision_point = [(abs(csv_data[C_index][1]) + abs(csv_data[C_index][6]))/2,
