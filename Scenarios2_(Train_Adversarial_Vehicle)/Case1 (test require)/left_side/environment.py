@@ -17,14 +17,9 @@ class ENV():
 #----------------------------------------------------------
     def __init__(self):
     # define state and action space (전진, 회전, 브레이크)
-        # steering_low, steering_high = -0.15, 0.15
-        # low = np.array([-20.0, -20.0, steering_low, steering_low, steering_low, 0.5])
-        # high = np.array([-10.0, -10.0, steering_high, steering_high, steering_high, 1.0])
-        # self.action_space = Box(low=low, high=high,shape=(6,), dtype=np.float_)
-
         steering_low, steering_high = -0.15, 0.15
-        low = np.array([-20.0, 10.0, steering_low, steering_low, steering_low, 0.5])
-        high = np.array([-10.0, 20.0, steering_high, steering_high, steering_high, 1.0])
+        low = np.array([-20.0, -20.0, steering_low, steering_low, steering_low, 0.5])
+        high = np.array([-10.0, -10.0, steering_high, steering_high, steering_high, 1.0])
         self.action_space = Box(low=low, high=high,shape=(6,), dtype=np.float_)
 
         # self.action_space = Box(low=0.0, high=1.0, shape=(6,), dtype=np.float_)
@@ -35,10 +30,8 @@ class ENV():
         self.observation_space_size_of_ego = 11
 
     # base parameter setting
-        self._max_episode_steps = 256
-
-
         self.figure_data = []
+        self.set_initial_position()
 
         try:
             self.car = airsim.CarClient()
@@ -53,7 +46,13 @@ class ENV():
             print("AIRSIM ERROR_01 : request failed")
 
 
-        self.json_file_path = "/home/smartcps/Documents/AirSim/settings.json"
+    def set_initial_position(self):
+        json_file_path = "/home/smartcps/Documents/AirSim/settings.json"
+        with open(json_file_path, 'r') as file:
+            data = json.load(file)
+        self.initial_state_A = [data['Vehicles']['A_Target']['X'], data['Vehicles']['A_Target']['Y']]
+        self.initial_state_B = [data['Vehicles']['B_Adversarial']['X'], data['Vehicles']['B_Adversarial']['Y']]
+        self.initial_state_C = [data['Vehicles']['C_Front']['X'], data['Vehicles']['C_Front']['Y']]
 
 #----------------------------------------------------------
 #                     2. reset
@@ -178,18 +177,18 @@ class ENV():
                 writer.writerow(item)
 
     def update_figure_data(self, vehicle_states):
-
+        initial_values = [self.initial_state_A, self.initial_state_B, self.initial_state_C]
         temp_data = []
 
         if(self.collision_info_1 and self.collision_info_2): IsCrash = True
         else: IsCrash = False
         temp_data.append(IsCrash)
 
-        for vehicle_state in vehicle_states:
-            position = vehicle_state.kinematics_estimated.position
-            x, y = position.x_val, position.y_val
+        for i in range(len(vehicle_states)):
+            position = vehicle_states[i].kinematics_estimated.position
+            x, y = position.x_val + initial_values[i][0], position.y_val + initial_values[i][1]
 
-            orientation = vehicle_state.kinematics_estimated.orientation
+            orientation = vehicle_states[i].kinematics_estimated.orientation
             pitch, roll, yaw = airsim.to_eularian_angles(orientation)
 
             temp_data += [x, y, pitch, roll, yaw]
@@ -209,6 +208,10 @@ class ENV():
 
                 A_state = self.get_state_of_target(target_car_state)
                 B_state = self.get_state_of_adversarial(adversarial_car_state)
+                
+                for i in range(len(self.initial_state_A)):
+                    A_state[i] += self.initial_state_A[i]
+                    B_state[i] += self.initial_state_B[i]
 
                 self.update_figure_data((target_car_state, adversarial_car_state, front_car_state))
                 break

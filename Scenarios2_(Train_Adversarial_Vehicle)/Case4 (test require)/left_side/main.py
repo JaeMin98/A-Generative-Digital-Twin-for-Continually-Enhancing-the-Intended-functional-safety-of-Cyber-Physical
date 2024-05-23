@@ -4,7 +4,7 @@ import itertools
 import torch
 import time
 import os
-from torch.utils.tensorboard import SummaryWriter
+import wandb
 
 from sac import SAC
 from replay_memory import ReplayMemory
@@ -40,7 +40,6 @@ np.random.seed(args.seed)
 
 # Adversarial_agent
 Adversarial_agent = SAC(env.observation_space_size, env.action_space, args)
-# Adversarial_agent.load_checkpoint("Adv_agent_model/desktop_3.tar")
 
 # Ego_agent
 Ego_args = args
@@ -49,9 +48,13 @@ Ego_args.hidden_size = 128
 Ego_agent = SAC(env.observation_space_size_of_ego, env.action_space_of_ego, Ego_args)
 Ego_agent.load_checkpoint("ego_agent_model/ego_agent.tar")
 
-#Tesnorboard
-writer = SummaryWriter('runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
-                                                             args.policy, "autotune" if args.automatic_entropy_tuning else ""))
+now = datetime.datetime.now()
+date_time_str = now.strftime("%Y-%m-%d-%H-%M-%S")
+wandb.init(
+    project="Car_case4",
+    config=args,
+    name="left_side__"+date_time_str  # 원하는 run 이름 지정
+)
 model_path = 'models/{}_SAC_{}_{}_{}/'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
                                                              args.policy, "autotune" if args.automatic_entropy_tuning else "")
 log_path = 'training_logs/{}_SAC_{}_{}_{}/'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
@@ -100,18 +103,18 @@ for i_episode in itertools.count(1):
             for i in range(args.updates_per_step):
                 # Update parameters of all the networks
                 critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = Adversarial_agent.update_parameters(memory, args.batch_size, updates)
-
-                writer.add_scalar('loss/critic_1', critic_1_loss, updates)
-                append_to_file(os.path.join(log_path,"critic_1_loss"), critic_1_loss)
-                writer.add_scalar('loss/critic_2', critic_2_loss, updates)
-                append_to_file(os.path.join(log_path,"critic_2_loss"),critic_2_loss)
-                writer.add_scalar('loss/policy', policy_loss, updates)
-                append_to_file(os.path.join(log_path,"policy_loss"),policy_loss)
-                writer.add_scalar('loss/entropy_loss', ent_loss, updates)
-                append_to_file(os.path.join(log_path,"ent_loss"),ent_loss)
-                writer.add_scalar('entropy_temprature/alpha', alpha, updates)
-                append_to_file(os.path.join(log_path,"alpha"),alpha)
                 updates += 1
+            wandb.log({"Network/critic_1": critic_1_loss}, step=i_episode)
+            wandb.log({"Network/critic_2": critic_2_loss}, step=i_episode)
+            wandb.log({"Network/policy": policy_loss}, step=i_episode)
+            wandb.log({"Network/entropy_loss": ent_loss}, step=i_episode)
+            wandb.log({"Network/alpha": alpha}, step=i_episode)
+            append_to_file(os.path.join(log_path,"critic_1_loss"), critic_1_loss)
+            append_to_file(os.path.join(log_path,"critic_2_loss"),critic_2_loss)
+            append_to_file(os.path.join(log_path,"policy_loss"),policy_loss)
+            append_to_file(os.path.join(log_path,"ent_loss"),ent_loss)
+            append_to_file(os.path.join(log_path,"alpha"),alpha)
+            
 
         
         env.step(action) # Step
@@ -162,10 +165,10 @@ for i_episode in itertools.count(1):
     append_to_file(os.path.join(MDP_log_path,"episode_reward"),episode_reward)
     append_to_file(os.path.join(MDP_log_path,"episode_reward_Ego"),episode_reward_Ego)
     append_to_file(os.path.join(MDP_log_path,"success_rate"),success_rate)
-    
-    writer.add_scalar('score/train', episode_reward, i_episode)
-    writer.add_scalar('Ego_score/train', episode_reward_Ego, i_episode)
-    writer.add_scalar('success_rate/train', success_rate, i_episode)
+
+    wandb.log({"episode/score": episode_reward}, step=i_episode)
+    wandb.log({"episode/ego_score": episode_reward_Ego}, step=i_episode)
+    wandb.log({"episode/success_rate": success_rate}, step=i_episode)
 
     training_log = "Episode: {}, total numsteps: {}, episode steps: {}, reward: {}".format(i_episode, total_numsteps, episode_steps, round(episode_reward, 2))
     print(training_log)

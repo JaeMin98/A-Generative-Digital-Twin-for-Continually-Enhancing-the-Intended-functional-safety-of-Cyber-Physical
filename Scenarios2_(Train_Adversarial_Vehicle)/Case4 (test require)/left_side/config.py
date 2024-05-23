@@ -42,7 +42,7 @@ parser.add_argument('--hidden_size', type=int, default=128, metavar='N',
 parser.add_argument('--updates_per_step', type=int, default=1, metavar='N',
                     help='model updates per simulator step (default: 1)')
 
-parser.add_argument('--start_steps', type=int, default=3000, metavar='N',
+parser.add_argument('--start_steps', type=int, default=2048, metavar='N',
                     help='Steps sampling random actions (default: 10000)')
 
 parser.add_argument('--target_update_interval', type=int, default=1, metavar='N',

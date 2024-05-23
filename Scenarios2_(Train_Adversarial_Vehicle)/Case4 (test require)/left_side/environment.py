@@ -7,6 +7,7 @@ import numpy as np
 import random
 import time
 import math
+import json
 from gym.spaces import Box
 
 class ENV():
@@ -42,6 +43,7 @@ class ENV():
                 print("AIRSIM ERROR_01 : request failed")
 
         self.steering_scale = 0.15
+        self.set_initial_position()
 
     # for (get_state_of_target)
         self.state_size = 7
@@ -54,7 +56,13 @@ class ENV():
 
         self.figure_data = []
 
-
+    def set_initial_position(self):
+        json_file_path = "/home/smartcps/Documents/AirSim/settings.json"
+        with open(json_file_path, 'r') as file:
+            data = json.load(file)
+        self.initial_state_A = [data['Vehicles']['A_Target']['X'], data['Vehicles']['A_Target']['Y']]
+        self.initial_state_B = [data['Vehicles']['B_Adversarial']['X'], data['Vehicles']['B_Adversarial']['Y']]
+        self.initial_state_C = [data['Vehicles']['C_Front']['X'], data['Vehicles']['C_Front']['Y']]
 
         
 
@@ -240,17 +248,19 @@ class ENV():
             for item in self.figure_data:
                 writer.writerow(item)
 
-    def update_figure_data(self, IsCrash, vehicle_states):
-
+    def update_figure_data(self, vehicle_states):
+        initial_values = [self.initial_state_A, self.initial_state_B, self.initial_state_C]
         temp_data = []
 
+        if(self.collision_info_1 and self.collision_info_2): IsCrash = True
+        else: IsCrash = False
         temp_data.append(IsCrash)
 
-        for vehicle_state in vehicle_states:
-            position = vehicle_state.kinematics_estimated.position
-            x, y = position.x_val, position.y_val
+        for i in range(len(vehicle_states)):
+            position = vehicle_states[i].kinematics_estimated.position
+            x, y = position.x_val + initial_values[i][0], position.y_val + initial_values[i][1]
 
-            orientation = vehicle_state.kinematics_estimated.orientation
+            orientation = vehicle_states[i].kinematics_estimated.orientation
             pitch, roll, yaw = airsim.to_eularian_angles(orientation)
 
             temp_data += [x, y, pitch, roll, yaw]
@@ -268,6 +278,10 @@ class ENV():
                 B_state = self.get_state_of_adversarial(adversarial_car_state)
                 C_state = self.get_state_of_front(front_car_state)
 
+                for i in range(len(self.initial_state_A)):
+                    A_state[i] += self.initial_state_A[i]
+                    B_state[i] += self.initial_state_B[i]
+                    C_state[i] += self.initial_state_C[i]
                 break
             except:
                 print("AIRSIM ERROR_07 : request failed")          

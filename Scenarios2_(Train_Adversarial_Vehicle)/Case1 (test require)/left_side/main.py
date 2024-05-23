@@ -5,7 +5,7 @@ import torch
 import time
 
 from sac import SAC
-from torch.utils.tensorboard import SummaryWriter
+import wandb
 
 import itertools
 from replay_memory import ReplayMemory
@@ -27,9 +27,13 @@ np.random.seed(123456)
 Adversarial_agent = SAC(90*5, env.action_space, args)
 
 
-#Tesnorboard
-writer = SummaryWriter('./runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
-                                                             args.policy, "autotune" if args.automatic_entropy_tuning else ""))
+now = datetime.datetime.now()
+date_time_str = now.strftime("%Y-%m-%d-%H-%M-%S")
+wandb.init(
+    project="Car_case1",
+    config=args,
+    name="left_side__"+date_time_str  # 원하는 run 이름 지정
+)
 model_path = './models/{}_SAC_{}_{}_{}/'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
                                                              args.policy, "autotune" if args.automatic_entropy_tuning else "")
 # Memory
@@ -54,19 +58,17 @@ for i_episode in itertools.count(1):
         for i in range(args.updates_per_step):
             # Update parameters of all the networks
             critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = Adversarial_agent.update_parameters(memory, args.batch_size, updates)
-
-            writer.add_scalar('loss/critic_1', critic_1_loss, updates)
-            # writer.add_scalar('loss/critic_2', critic_2_loss, updates)
-            # writer.add_scalar('loss/policy', policy_loss, updates)
-            writer.add_scalar('loss/entropy_loss', ent_loss, updates)
-            writer.add_scalar('entropy_temprature/alpha', alpha, updates)
             updates += 1
+        wandb.log({"Network/critic_1": critic_1_loss}, step=i_episode)
+        wandb.log({"Network/critic_2": critic_2_loss}, step=i_episode)
+        wandb.log({"Network/policy": policy_loss}, step=i_episode)
+        wandb.log({"Network/entropy_loss": ent_loss}, step=i_episode)
+        wandb.log({"Network/alpha": alpha}, step=i_episode)
 
     next_state, reward, done, success = env.step(action) # Step
     next_state = list(itertools.chain(*next_state))
-    done, success = False, False
 
-    memory.push(state, action, reward, next_state, done)
+    memory.push(state, action, reward, next_state, False)
 
     #success rate 계산
     success_list.append(success)
@@ -78,8 +80,8 @@ for i_episode in itertools.count(1):
 
     success_rate = 100*(sum_last/average_num)
     
-    writer.add_scalar('score/train', reward, i_episode)
-    writer.add_scalar('success_rate/train', success_rate, i_episode)
+    wandb.log({"episode/score": reward}, step=i_episode)
+    wandb.log({"episode/success_rate": success_rate}, step=i_episode)
     
     if (env.collision_info_1 == True) and (env.collision_info_2 == True):
         Adversarial_agent.save_model(model_path + str(i_episode)+".tar")
