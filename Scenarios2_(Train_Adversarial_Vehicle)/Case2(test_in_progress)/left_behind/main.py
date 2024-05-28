@@ -109,9 +109,12 @@ for i_episode in itertools.count(1):
     wandb.log({"episode/success_rate": success_rate}, step=i_episode)
     wandb.log({"episode/ROI_success_rate": ROI_success_rate}, step=i_episode)
     
-    if (env.collision_info_1 == True) and (env.collision_info_2 == True):
+    if (env.IsCollision == True):
         Adversarial_agent.save_model(model_path + str(i_episode)+".tar")
         env.write_figure_data(model_path + str(i_episode)+".csv")
+
+        if(env.Is_ROI_Collision == True):
+            env.write_figure_data(model_path + 'ROI_Collision_'+str(i_episode)+".csv")
 
     print("Episode: {}, reward: {}, actions: [{}, {}, {}, {}]".format(i_episode, round(reward, 2), action[0], action[1], action[2], action[3]))
 

@@ -9,6 +9,8 @@ import json
 from gym.spaces import Box
 import csv
 
+import config
+from sac import SAC
 
 
 class ENV():
@@ -22,9 +24,9 @@ class ENV():
         # high = np.array([-10.0, -10.0, steering_high, steering_high, steering_high, 1.0])
         # self.action_space = Box(low=low, high=high,shape=(6,), dtype=np.float_)
 
-        yaw_low, yaw_high = 0, 0.5
-        low = np.array([-15.0, -16.0, yaw_low, 0.6])  #A.Y = -3
-        high = np.array([-10.0, -13.0, yaw_high, 1.0])
+        yaw_low, yaw_high = 0.0, 0.5
+        low = np.array([-15.0, -15.0, yaw_low, 0.5])  #A.Y = -3
+        high = np.array([-10.0, -10.0, yaw_high, 1.0])
         self.action_space = Box(low=low, high=high,shape=(4,), dtype=np.float_)
 
     # self.action_space = Box(low=0.0, high=1.0, shape=(6,), dtype=np.float_)
@@ -35,7 +37,9 @@ class ENV():
         self.observation_space_size_of_ego = 11
 
         self.figure_data = []
+        self.IsCollision = False
         self.set_initial_position()
+        self.set_ego_agent()
 
         try:
             self.car = airsim.CarClient()
@@ -58,6 +62,15 @@ class ENV():
         self.initial_state_B = [data['Vehicles']['B_Adversarial']['X'], data['Vehicles']['B_Adversarial']['Y']]
         self.initial_state_C = [data['Vehicles']['C_Front']['X'], data['Vehicles']['C_Front']['Y']]
 
+    def set_ego_agent(self):
+        parser = config.parser
+        args = parser.parse_args()
+        Ego_args = args
+        Ego_args.hidden_size = 128
+
+        self.Ego_agent = SAC(self.observation_space_size_of_ego, self.action_space_of_ego, Ego_args)
+        self.Ego_agent.load_checkpoint("ego_agent_model/ego_agent.tar")
+
 #----------------------------------------------------------
 #                     2. reset
 #----------------------------------------------------------
@@ -71,11 +84,20 @@ class ENV():
         time.sleep(2)
     
     def set_position(self, x, y , yaw):
+        position = airsim.Vector3r(self.initial_state_A[0], self.initial_state_A[1], -3)
+        orientation = airsim.Quaternionr(0, 0, 0, 1)
+        pose = airsim.Pose(position, orientation)
+        self.car.simSetObjectPose("A_Target", pose, True)
+
         position = airsim.Vector3r(x, y, -3)
         orientation = airsim.Quaternionr(0, 0, yaw, 1)
         pose = airsim.Pose(position, orientation)
-
         self.car.simSetObjectPose("B_Adversarial", pose, True)
+
+        position = airsim.Vector3r(self.initial_state_C[0], self.initial_state_C[1], -3)
+        orientation = airsim.Quaternionr(0, 0, 0.015, 1)
+        pose = airsim.Pose(position, orientation)
+        self.car.simSetObjectPose("C_Front", pose, True)
 
 #----------------------------------------------------------
 #                   3. get state
@@ -104,6 +126,7 @@ class ENV():
     def set_car_control_of_target(self, throttle, brake):
         if throttle > 0.95: throttle = 0.95
         elif throttle < 0.25: throttle = 0.25
+
         self.target_car_controls.throttle = throttle
         self.target_car_controls.brake = brake
 
@@ -112,22 +135,48 @@ class ENV():
         except:
             print("AIRSIM ERROR_02 : request failed")
 
+
     def set_car_control_of_adversarial(self, throttle, steering, brake):
         self.adversarial_car_controls.throttle = throttle
         self.adversarial_car_controls.steering = steering
         self.adversarial_car_controls.brake = brake
+
         try:
             self.car.setCarControls(self.adversarial_car_controls, "B_Adversarial")
         except:
             print("AIRSIM ERROR_03 : request failed")
 
+
+
     def set_car_control_of_front(self, throttle, brake):
         self.front_car_controls.throttle = throttle
         self.front_car_controls.brake = brake
+    
         try:
             self.car.setCarControls(self.front_car_controls, "C_Front")
         except:
             print("AIRSIM ERROR_04 : request failed")
+        
+
+
+    def set_car_control_of_front_random(self):
+        front_throttle_value = self.front_car_controls.throttle
+
+        change = (random.random() - 0.5) * 0.1
+        front_throttle_value += change
+
+        # 양 극에 도달했을 때의 처리를 변경
+        if front_throttle_value > 0.90:
+            front_throttle_value -= change  # 최대를 넘으면 변화량을 빼서 조정
+        elif front_throttle_value < 0.30:
+            front_throttle_value -= change  # 최소를 넘으면 변화량을 빼서 조정
+
+        self.front_car_controls.throttle = front_throttle_value
+
+        try:
+            self.car.setCarControls(self.front_car_controls, "C_Front")
+        except:
+            print("AIRSIM ERROR_05 : request failed")
 
 #----------------------------------------------------------
 #                 5. reward function
@@ -136,8 +185,8 @@ class ENV():
         done,success = False, False
 
         reward_c = 0
-        if (self.collision_info_1 == True) and (self.collision_info_2 == True):
-                print("################### CRASH ###################")
+        if (self.IsCollision == True):
+                print("################### Collision ###################")
                 reward_c = 1
                 done = True
                 success = True
@@ -160,7 +209,7 @@ class ENV():
         return distance
 
     def write_figure_data(self, file_path):
-        column_names = ['IsCrash', 'A.X', 'A.Y', 'A.Pitch', 'A.Roll', 'A.Yaw', 'B.X', 'B.Y', 'B.Pitch', 'B.Roll', 'B.Yaw', 'C.X', 'C.Y', 'C.Pitch', 'C.Roll', 'C.Yaw']
+        column_names = ['IsCollision', 'A.X', 'A.Y', 'A.Pitch', 'A.Roll', 'A.Yaw', 'B.X', 'B.Y', 'B.Pitch', 'B.Roll', 'B.Yaw', 'C.X', 'C.Y', 'C.Pitch', 'C.Roll', 'C.Yaw']
 
         with open(file_path, mode='a', newline='') as file:
             writer = csv.writer(file)
@@ -173,9 +222,7 @@ class ENV():
         initial_values = [self.initial_state_A, self.initial_state_B, self.initial_state_C]
         temp_data = []
 
-        if(self.collision_info_1 and self.collision_info_2):IsCrash = True
-        else: IsCrash = False
-        temp_data.append(IsCrash)
+        temp_data.append(self.IsCollision)
 
         for i in range(len(vehicle_states)):
             position = vehicle_states[i].kinematics_estimated.position
@@ -190,7 +237,8 @@ class ENV():
 
     def observation(self):
         while(True):
-            try:   #here
+            try:
+                #State Check
                 target_car_state = self.car.getCarState("A_Target")
                 adversarial_car_state = self.car.getCarState("B_Adversarial")
                 front_car_state = self.car.getCarState("C_Front")
@@ -201,14 +249,25 @@ class ENV():
                 for i in range(len(self.initial_state_A)):
                     A_state[i] += self.initial_state_A[i]
                     B_state[i] += self.initial_state_B[i]
+        
+                #Collision Check
+                distance_x = (B_state[0] - A_state[0])
+                try:
+                    collision_info_1 = self.car.simGetCollisionInfo("A_Target")
+                    collision_info_2 = self.car.simGetCollisionInfo("B_Adversarial")
+                    # collision_info_3 = self.car.simGetCollisionInfo("C_Front")
+                except:
+                    collision_info_1 = False
+                    collision_info_2 = False
+                    # collision_info_3 = False
+                    print("AIRSIM ERROR_06 : request failed")
 
-                if not(self.collision_info_1): 
-                    self.collision_info_1 = self.car.simGetCollisionInfo("A_Target").has_collided
-                    if(self.collision_info_1 and (B_state[0] - A_state[0]) >= 2.5):
+                # if (collision_info_3.has_collided == True) and (collision_info_2.has_collided == True): print("ENDCODE : COLLISION_01")
+                if (collision_info_1.has_collided == True) and (collision_info_2.has_collided == True):
+                    self.IsCollision = True
+                    if distance_x >= 2.5: # ROI collision
                         self.Is_ROI_Collision = True
-                if not(self.collision_info_2): 
-                    self.collision_info_2 = self.car.simGetCollisionInfo("B_Adversarial").has_collided
-
+                        
                 self.update_figure_data((target_car_state, adversarial_car_state, front_car_state))
                 break
             except:
@@ -225,10 +284,8 @@ class ENV():
     
     def step(self, action):
         self.figure_data = []
-        self.collision_info_1 = False
-        self.collision_info_2 = False
-        self.Is_ROI_Collision = False   #here
-
+        self.IsCollision = False
+        self.Is_ROI_Collision = False
         self.reset(action[0], action[1], action[2])
 
         observations = []
@@ -239,11 +296,19 @@ class ENV():
         self.set_car_control_of_target(0.6, 0)
         self.set_car_control_of_front(0.6, 0)
 
+        count = 0
         while(1):
             observations.append(self.observation())
             time.sleep(0.1)
             if (time.time()-start_time) > 9 :
                 break
+
+            if( (count % 3) == 0) and count != 0:
+                self.set_car_control_of_front_random()
+            Ego_state = self.get_Ego_state()
+            self.step_for_Ego(self.Ego_agent.select_action(Ego_state))
+
+            count += 1
 
         self.set_car_control_of_adversarial(0, 0, 1)
         self.set_car_control_of_target(0, 1)
@@ -254,11 +319,43 @@ class ENV():
         reward, done, success = self.get_reward(action, observations)
 
         return observations, reward, done, success, self.Is_ROI_Collision #here
+#----------------------------------------------------------
+#                7. methods for Ego agent
+#----------------------------------------------------------
+
+    def get_Ego_state(self):
+
+        target_car_state = self.car.getCarState("A_Target")
+
+        state = np.zeros(11)
+        for i in range (9):
+            sensor_name = "Distance_"        
+            sensor_name = sensor_name + str(i)  
+            state[i] = round(self.car.getDistanceSensorData(distance_sensor_name=sensor_name, vehicle_name="A_Target").distance, 3)
+
+        state[9] = round(target_car_state.speed, 3)
+        state[10] = target_car_state.gear
+
+        state = np.reshape(state, [1, 11])
+
+    # sate = [[ Laser sensor 9ea + target_speed + target_gear ]] <--numpy array
+        return state.tolist()[0]
+
+    def step_for_Ego(self, action):
+        if( 0.1 <= action[1] ): Is_brake = 0
+        else: Is_brake = 1
+        
+        while(True):
+            try:
+                self.set_car_control_of_target(float(action[0]), Is_brake)
+                break
+            except:
+                print("AIRSIM ERROR_09 : request failed")
 
 if __name__ == "__main__":
     k = ENV()
 
-    action  = [0,-10,0.2,-0.4,0.1,0.6]
+    action  = [0, -10, 0.2, -0.4, 0.1, 0.6]
     observations = k.step(action)
     print(observations)
     
