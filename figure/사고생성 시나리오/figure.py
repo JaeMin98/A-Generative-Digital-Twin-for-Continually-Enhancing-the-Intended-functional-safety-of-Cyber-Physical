@@ -5,6 +5,11 @@ import numpy as np
 import csv
 import os
 import math
+from tqdm import tqdm
+
+def create_folder_if_not_exists(folder_path):
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
 
 def read_csv(file_path):
     csv_data = []
@@ -48,10 +53,17 @@ def plot_figure(csv_data,figure_name):
     for row in csv_data:
         for i in [1,6,11]:
             if i < len(row):  # 행의 길이를 벗어나지 않는지 확인
-                row[i] = row[i]*2.5 
+                row[i] = row[i]*2.5
+
+        for i in [2,7,12]:
+            if i < len(row):  # 행의 길이를 벗어나지 않는지 확인
+                row[i] += 3
+                row[i] = row[i]*2.0
+        
+        row[7] -= 4
 
     red_path = np.array([[row[1], row[2]] for row in csv_data])
-    blue_path = np.array([[row[6], -row[7]] for row in csv_data])
+    blue_path = np.array([[row[6], row[7]] for row in csv_data])
     green_path = np.array([[row[11], row[12]] for row in csv_data])
 
     path_line_width = 2.5
@@ -96,8 +108,8 @@ def plot_figure(csv_data,figure_name):
         if(i == 0) or (i == C_index) or (i % 10 == 0): draw_car(ax, blue_path[i], blue_yaws[i], 'blue')
 #-----------------------------------------------------------------------------------------------------------------------------
     # 충돌 지점 그리기
-    collision_point = [(abs(csv_data[C_index][1]) + abs(csv_data[C_index][6]))/2,
-                       (abs(csv_data[C_index][2]) + abs(csv_data[C_index][7]))/2]
+    collision_point = [(csv_data[C_index][1] + csv_data[C_index][6])/2,
+                       (csv_data[C_index][2] + csv_data[C_index][7])/2]
 
     collision_maker_zorder = 5
     ax.plot(collision_point[0], collision_point[1], '*', color='black', markersize=30, zorder=collision_maker_zorder)
@@ -118,17 +130,36 @@ def plot_figure(csv_data,figure_name):
     ax.set_ylim(-30, 30)
     ax.set_aspect('auto')
     plt.axis('off')
+    
     plt.savefig(figure_name, bbox_inches='tight', pad_inches=0.2)
 
 
 
 
-# directory = "case1/left_behind"
+directory = "case2/left_side"
 
-# csv_files = []
-# for filename in os.listdir(directory):
-#     if filename.endswith(".csv"):
-#         csv_files.append(filename)
+csv_files = []
+for filename in os.listdir(directory):
+    if filename.endswith(".csv"):
+        csv_files.append(filename)
+
+# csv_files=['221.csv']
+for file in tqdm(csv_files):
+    csv_path = os.path.join(directory, file)
+    csv_data =  read_csv(csv_path)
+
+    image_directory = os.path.join('image2', directory)
+    create_folder_if_not_exists(image_directory)
+
+    image_path = os.path.join('image2', csv_path)
+    image_path = image_path[:-4] + '.png'
+
+    plot_figure(csv_data, image_path)
+
+
+# directory = "case1"
+
+# csv_files = ['759.csv']
 
 # for file in csv_files:
 #     csv_path = os.path.join(directory, file)
@@ -137,16 +168,3 @@ def plot_figure(csv_data,figure_name):
 #     image_path = os.path.join('image', csv_path)
 #     image_path = image_path[:-4] + '.png'
 #     plot_figure(csv_data, image_path)
-
-
-directory = "case1/left_behind"
-
-csv_files = ['970.csv']
-
-for file in csv_files:
-    csv_path = os.path.join(directory, file)
-
-    csv_data =  read_csv(csv_path)
-    image_path = os.path.join('image', csv_path)
-    image_path = image_path[:-4] + '.png'
-    plot_figure(csv_data, image_path)
