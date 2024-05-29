@@ -25,8 +25,8 @@ class ENV():
         # self.action_space = Box(low=low, high=high,shape=(6,), dtype=np.float_)
 
         yaw_low, yaw_high = 0.0, 0.5
-        low = np.array([-15.0, -15.0, yaw_low, 0.5])  #A.Y = -3
-        high = np.array([-10.0, -10.0, yaw_high, 1.0])
+        low = np.array([-11.0, -16.0, yaw_low, 0.5])  #A.Y = -3
+        high = np.array([-8.0, -13.0, yaw_high, 1.0])
         self.action_space = Box(low=low, high=high,shape=(4,), dtype=np.float_)
 
     # self.action_space = Box(low=0.0, high=1.0, shape=(6,), dtype=np.float_)
