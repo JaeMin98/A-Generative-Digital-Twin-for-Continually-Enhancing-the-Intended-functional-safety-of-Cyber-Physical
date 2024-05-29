@@ -95,7 +95,7 @@ class ENV():
         self.car.simSetObjectPose("B_Adversarial", pose, True)
 
         position = airsim.Vector3r(self.initial_state_C[0], self.initial_state_C[1], -3)
-        orientation = airsim.Quaternionr(0, 0, 0.015, 1)
+        orientation = airsim.Quaternionr(0, 0, 0.0, 1)
         pose = airsim.Pose(position, orientation)
         self.car.simSetObjectPose("C_Front", pose, True)
 
@@ -303,7 +303,7 @@ class ENV():
             if (time.time()-start_time) > 9 :
                 break
 
-            if( (count % 3) == 0) and count != 0:
+            if( (count % 30) == 0) and count != 0:
                 self.set_car_control_of_front_random()
             Ego_state = self.get_Ego_state()
             self.step_for_Ego(self.Ego_agent.select_action(Ego_state))
