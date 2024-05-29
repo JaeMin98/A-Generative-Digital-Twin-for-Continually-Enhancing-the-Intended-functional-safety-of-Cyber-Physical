@@ -36,7 +36,7 @@ parser.add_argument('--batch_size', type=int, default=128, metavar='N',
 parser.add_argument('--num_steps', type=int, default=1000000, metavar='N',
                     help='maximum number of steps (default: 1000000)')
 
-parser.add_argument('--hidden_size', type=int, default=256, metavar='N',
+parser.add_argument('--hidden_size', type=int, default=64, metavar='N',
                     help='hidden size (default: 256)')
 
 parser.add_argument('--updates_per_step', type=int, default=1, metavar='N',
