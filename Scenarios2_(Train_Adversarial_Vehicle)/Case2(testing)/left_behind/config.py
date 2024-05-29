@@ -17,32 +17,32 @@ parser.add_argument('--gamma', type=float, default=0.999, metavar='G',
 parser.add_argument('--tau', type=float, default=0.005, metavar='G',
                     help='target smoothing coefficient(τ) (default: 0.005)')
 
-parser.add_argument('--lr', type=float, default=0.00015, metavar='G',
+parser.add_argument('--lr', type=float, default=0.001, metavar='G',
                     help='learning rate (default: 0.0003)')
 
 parser.add_argument('--alpha', type=float, default=0.2, metavar='G',
                     help='Temperature parameter α determines the relative importance of the entropy\
                             term against the reward (default: 0.2)')
 
-parser.add_argument('--automatic_entropy_tuning', type=bool, default=True, metavar='G',
+parser.add_argument('--automatic_entropy_tuning', type=bool, default=False, metavar='G',
                     help='Automaically adjust α (default: False)')
 
 parser.add_argument('--seed', type=int, default=123456, metavar='N',
                     help='random seed (default: 123456)')
 
-parser.add_argument('--batch_size', type=int, default=64, metavar='N',
+parser.add_argument('--batch_size', type=int, default=128, metavar='N',
                     help='batch size (default: 256)')
 
-parser.add_argument('--num_steps', type=int, default=1000001, metavar='N',
+parser.add_argument('--num_steps', type=int, default=1000000, metavar='N',
                     help='maximum number of steps (default: 1000000)')
 
-parser.add_argument('--hidden_size', type=int, default=8, metavar='N',
+parser.add_argument('--hidden_size', type=int, default=256, metavar='N',
                     help='hidden size (default: 256)')
 
 parser.add_argument('--updates_per_step', type=int, default=1, metavar='N',
                     help='model updates per simulator step (default: 1)')
 
-parser.add_argument('--start_steps', type=int, default=64, metavar='N',
+parser.add_argument('--start_steps', type=int, default=128, metavar='N',
                     help='Steps sampling random actions (default: 10000)')
 
 parser.add_argument('--target_update_interval', type=int, default=1, metavar='N',

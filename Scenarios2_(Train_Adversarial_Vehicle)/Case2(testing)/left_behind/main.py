@@ -57,7 +57,8 @@ ROI_success_list = []
 state= None
 
 for i_episode in itertools.count(1):
-    state = np.ones(90*5)
+    state_size = 90*5
+    state = np.ones(state_size)
 
     if args.start_steps > i_episode:
         action = env.action_space.sample()  # Sample random action
@@ -79,7 +80,7 @@ for i_episode in itertools.count(1):
 
     next_state, reward, done, success, ROI_success = env.step(action) # Step
     next_state = list(itertools.chain(*next_state))
-    next_state = adjust_list_length(next_state)
+    next_state = adjust_list_length(next_state, target_length = state_size)
 
     memory.push(state, action, reward, next_state, False)
 
