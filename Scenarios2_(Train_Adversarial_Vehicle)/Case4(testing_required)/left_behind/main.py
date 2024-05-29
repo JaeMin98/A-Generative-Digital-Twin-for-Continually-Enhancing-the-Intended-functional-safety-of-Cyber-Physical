@@ -53,7 +53,7 @@ date_time_str = now.strftime("%Y-%m-%d-%H-%M-%S")
 wandb.init(
     project="Car_case4",
     config=args,
-    name="left_side__"+date_time_str  # 원하는 run 이름 지정
+    name="left_behind__"+date_time_str  # 원하는 run 이름 지정
 )
 model_path = 'models/{}_SAC_{}_{}_{}/'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
                                                              args.policy, "autotune" if args.automatic_entropy_tuning else "")
@@ -81,6 +81,7 @@ total_numsteps = 0
 updates = 0
 
 success_list = []
+ROI_success_list = []
 
 for i_episode in itertools.count(1):
     episode_reward = 0
@@ -145,11 +146,11 @@ for i_episode in itertools.count(1):
     else:
         Adversarial_agent.save_model(model_path + str(i_episode)+".tar")
         env.write_figure_data(model_path + str(i_episode)+".csv")
-        
-    #success rate 계산
-    
-    success_list.append(success)
 
+    
+    #success rate 계산
+    #------success rate 계산-------
+    success_list.append(env.IsCollision)
     average_num = 20
     n = len(success_list)
 
@@ -157,18 +158,33 @@ for i_episode in itertools.count(1):
     else: sum_last = sum(success_list)
 
     success_rate = 100*(sum_last/average_num)
+    #-----------------------------------
+
+    #------ROI_success rate 계산-------
+    ROI_success = success
+    ROI_success_list.append(ROI_success)
+    ROI_average_num = 20
+    ROI_n = len(ROI_success_list)
+
+    if n >= ROI_average_num: ROI_sum_last = sum(ROI_success_list[ROI_n-ROI_average_num:n])
+    else: ROI_sum_last = sum(ROI_success_list)
+
+    ROI_success_rate = 100*(ROI_sum_last/ROI_average_num)
+    #-----------------------------------
 
     if total_numsteps > args.num_steps:
         break
     
-    append_to_file(os.path.join(MDP_log_path,"success"),success)
-    append_to_file(os.path.join(MDP_log_path,"episode_reward"),episode_reward)
-    append_to_file(os.path.join(MDP_log_path,"episode_reward_Ego"),episode_reward_Ego)
-    append_to_file(os.path.join(MDP_log_path,"success_rate"),success_rate)
-
-    wandb.log({"episode/score": episode_reward}, step=i_episode)
-    wandb.log({"episode/ego_score": episode_reward_Ego}, step=i_episode)
+    wandb.log({"episode/score": reward}, step=i_episode)
     wandb.log({"episode/success_rate": success_rate}, step=i_episode)
+    wandb.log({"episode/ROI_success_rate": ROI_success_rate}, step=i_episode)
+
+    if (env.IsCollision == True):
+        Adversarial_agent.save_model(model_path + str(i_episode)+".tar")
+        env.write_figure_data(model_path + str(i_episode)+".csv")
+
+        if(ROI_success == True):
+            env.write_figure_data(model_path + 'ROI_Collision_'+str(i_episode)+".csv")
 
     training_log = "Episode: {}, total numsteps: {}, episode steps: {}, reward: {}".format(i_episode, total_numsteps, episode_steps, round(episode_reward, 2))
     print(training_log)

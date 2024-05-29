@@ -55,6 +55,7 @@ class ENV():
         self.dist_reward_scale = 0.1
 
         self.figure_data = []
+        self.IsCollision = False
 
     def set_initial_position(self):
         json_file_path = "/home/smartcps/Documents/AirSim/settings.json"
@@ -73,13 +74,10 @@ class ENV():
     def reset(self):
         self.car.reset()
 
-        # position = airsim.Vector3r(-3, -10, -3)
-        # orientation = airsim.Quaternionr(0, 0, 0, 1)
-        # pose = airsim.Pose(position, orientation)
-        # self.car.simSetObjectPose("B_Adversarial", pose, True)
-        # time.sleep(2)
-
+        self.IsCollision = False
         self.figure_data = []
+
+        self.set_position(-8,-13)
         self.set_car_control_of_target(0.6, 0)
         self.set_car_control_of_adversarial(0.6, 0, 0)
         self.set_car_control_of_front(0.6, 0)
@@ -89,6 +87,21 @@ class ENV():
 
         return state
 
+    def set_position(self, x, y):
+        position = airsim.Vector3r(self.initial_state_A[0], self.initial_state_A[1], -3)
+        orientation = airsim.Quaternionr(0, 0, 0, 1)
+        pose = airsim.Pose(position, orientation)
+        self.car.simSetObjectPose("A_Target", pose, True)
+
+        position = airsim.Vector3r(x, y, -3)
+        orientation = airsim.Quaternionr(0, 0, 0, 1)
+        pose = airsim.Pose(position, orientation)
+        self.car.simSetObjectPose("B_Adversarial", pose, True)
+
+        position = airsim.Vector3r(self.initial_state_C[0], self.initial_state_C[1], -3)
+        orientation = airsim.Quaternionr(0, 0, 0.0, 1)
+        pose = airsim.Pose(position, orientation)
+        self.car.simSetObjectPose("C_Front", pose, True)
 #----------------------------------------------------------
 #                   3. get state 
 #----------------------------------------------------------
@@ -219,6 +232,7 @@ class ENV():
             
 
         if (collision_info_1.has_collided == True) and (collision_info_2.has_collided == True):
+            self.IsCollision = True
             # not ROI collision
             if distance_x < 2.5:
                 reward += 200
@@ -239,7 +253,7 @@ class ENV():
 #         6. observation & step for learning
 #----------------------------------------------------------
     def write_figure_data(self, file_path):
-        column_names = ['IsCrash', 'A.X', 'A.Y', 'A.Pitch', 'A.Roll', 'A.Yaw', 'B.X', 'B.Y', 'B.Pitch', 'B.Roll', 'B.Yaw', 'C.X', 'C.Y', 'C.Pitch', 'C.Roll', 'C.Yaw']
+        column_names = ['IsCollision', 'A.X', 'A.Y', 'A.Pitch', 'A.Roll', 'A.Yaw', 'B.X', 'B.Y', 'B.Pitch', 'B.Roll', 'B.Yaw', 'C.X', 'C.Y', 'C.Pitch', 'C.Roll', 'C.Yaw']
 
         with open(file_path, mode='a', newline='') as file:
             writer = csv.writer(file)
@@ -252,9 +266,7 @@ class ENV():
         initial_values = [self.initial_state_A, self.initial_state_B, self.initial_state_C]
         temp_data = []
 
-        if(self.collision_info_1 and self.collision_info_2): IsCrash = True
-        else: IsCrash = False
-        temp_data.append(IsCrash)
+        temp_data.append(self.IsCollision)
 
         for i in range(len(vehicle_states)):
             position = vehicle_states[i].kinematics_estimated.position
@@ -292,7 +304,7 @@ class ENV():
 
         E_reward, E_done, E_success = self.get_Ego_reward(target_car_state, front_car_state)
 
-        self.update_figure_data(success, (target_car_state, adversarial_car_state, front_car_state))
+        self.update_figure_data((target_car_state, adversarial_car_state, front_car_state))
 
         return state, reward, done, success, E_reward
 
