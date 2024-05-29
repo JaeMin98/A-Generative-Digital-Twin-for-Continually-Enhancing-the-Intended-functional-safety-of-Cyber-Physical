@@ -53,12 +53,12 @@ def plot_figure(csv_data,figure_name):
     for row in csv_data:
         for i in [1,6,11]:
             if i < len(row):  # 행의 길이를 벗어나지 않는지 확인
-                row[i] = row[i]*2.5
+                row[i] = row[i]*3 + 5.0
 
         for i in [2,7,12]:
             if i < len(row):  # 행의 길이를 벗어나지 않는지 확인
                 row[i] += 3
-                row[i] = row[i]*2.0
+                row[i] = row[i]*1.7
         
         row[7] -= 4
 
@@ -136,7 +136,7 @@ def plot_figure(csv_data,figure_name):
 
 
 
-directory = "case2/left_side"
+directory = "case1/left_behind"
 
 csv_files = []
 for filename in os.listdir(directory):
