@@ -11,6 +11,14 @@ import itertools
 from replay_memory import ReplayMemory
 import config
 import environment
+import os
+
+def create_folder_if_not_exists(folder_path):
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        print(f"폴더 생성: {folder_path}")
+    else:
+        pass
 
 def adjust_list_length(input_list, target_length=450):
     if len(input_list) < target_length:
@@ -108,12 +116,20 @@ for i_episode in itertools.count(1):
     wandb.log({"episode/success_rate": success_rate}, step=i_episode)
     wandb.log({"episode/ROI_success_rate": ROI_success_rate}, step=i_episode)
 
+
     if (env.IsCollision == True):
-        Adversarial_agent.save_model(model_path + str(i_episode)+".tar")
-        env.write_figure_data(model_path + str(i_episode)+".csv")
+        collision_episode_path = model_path+'collision'
+        create_folder_if_not_exists(collision_episode_path)
+        env.write_figure_data(collision_episode_path + '/' + str(i_episode)+".csv")
 
         if(env.Is_ROI_Collision == True):
-            env.write_figure_data(model_path + 'ROI_Collision_'+str(i_episode)+".csv")
+            ROI_collision_episode_path = model_path+'ROI_collision'
+            create_folder_if_not_exists(ROI_collision_episode_path)
+            env.write_figure_data(ROI_collision_episode_path + '/' + str(i_episode)+".csv")
+    else :
+        fail_episode_path = model_path+'fail'
+        create_folder_if_not_exists(fail_episode_path)
+        env.write_figure_data(fail_episode_path + '/' + str(i_episode)+".csv")
 
     print("Episode: {}, reward: {}, actions: [{}, {}, {}, {}, {}, {}]".format(i_episode, round(reward, 2), action[0], action[1], action[2], action[3], action[4], action[5]))
 

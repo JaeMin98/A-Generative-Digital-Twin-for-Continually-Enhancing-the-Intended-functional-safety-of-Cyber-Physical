@@ -11,7 +11,14 @@ import itertools
 from replay_memory import ReplayMemory
 import config
 import environment
+import os
 
+def create_folder_if_not_exists(folder_path):
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        print(f"폴더 생성: {folder_path}")
+    else:
+        pass
 
 def adjust_list_length(input_list, target_length=450):
     if len(input_list) < target_length:

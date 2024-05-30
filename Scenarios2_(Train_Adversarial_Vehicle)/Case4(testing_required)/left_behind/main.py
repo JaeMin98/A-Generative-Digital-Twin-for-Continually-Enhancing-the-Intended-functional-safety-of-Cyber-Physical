@@ -89,6 +89,7 @@ for i_episode in itertools.count(1):
     episode_steps = 0
     done = False
     state = env.reset()
+    IS_episode_ROI_coll = False
 
     while not done:
         if args.start_steps > total_numsteps:
@@ -116,8 +117,6 @@ for i_episode in itertools.count(1):
             append_to_file(os.path.join(log_path,"ent_loss"),ent_loss)
             append_to_file(os.path.join(log_path,"alpha"),alpha)
             
-
-        
         env.step(action) # Step
         env.step_for_Ego(Ego_action)
         
@@ -132,6 +131,8 @@ for i_episode in itertools.count(1):
         episode_reward += reward
         episode_reward_Ego += Ego_reward
 
+        if(success) : IS_episode_ROI_coll = True
+
         # Ignore the "done" signal if it comes from hitting the time horizon.
         # (https://github.com/openai/spinningup/blob/master/spinup/algos/sac/sac.py)
         mask = 1 if episode_steps == env._max_episode_steps else float(not done)
@@ -139,14 +140,7 @@ for i_episode in itertools.count(1):
         memory.push(state, action, reward, next_state, mask) # Append transition to memory
 
         state = next_state
-
-    #done이고 Success == False이면 Ego가 주행을 성공했다고 간주하여 Ego reward + 250
-    if(success == False):
-        episode_reward_Ego += 250
-    else:
-        Adversarial_agent.save_model(model_path + str(i_episode)+".tar")
-        env.write_figure_data(model_path + str(i_episode)+".csv")
-
+        if(episode_steps == 300) : done = True
     
     #success rate 계산
     #------success rate 계산-------
@@ -161,8 +155,7 @@ for i_episode in itertools.count(1):
     #-----------------------------------
 
     #------ROI_success rate 계산-------
-    ROI_success = success
-    ROI_success_list.append(ROI_success)
+    ROI_success_list.append(IS_episode_ROI_coll)
     ROI_average_num = 20
     ROI_n = len(ROI_success_list)
 
@@ -175,16 +168,23 @@ for i_episode in itertools.count(1):
     if total_numsteps > args.num_steps:
         break
     
-    wandb.log({"episode/score": reward}, step=i_episode)
+    wandb.log({"episode/score": episode_reward}, step=i_episode)
     wandb.log({"episode/success_rate": success_rate}, step=i_episode)
     wandb.log({"episode/ROI_success_rate": ROI_success_rate}, step=i_episode)
 
     if (env.IsCollision == True):
-        Adversarial_agent.save_model(model_path + str(i_episode)+".tar")
-        env.write_figure_data(model_path + str(i_episode)+".csv")
+        collision_episode_path = model_path+'collision'
+        create_folder_if_not_exists(collision_episode_path)
+        env.write_figure_data(collision_episode_path + '/' + str(i_episode)+".csv")
 
-        if(ROI_success == True):
-            env.write_figure_data(model_path + 'ROI_Collision_'+str(i_episode)+".csv")
+        if(IS_episode_ROI_coll == True):
+            ROI_collision_episode_path = model_path+'ROI_collision'
+            create_folder_if_not_exists(ROI_collision_episode_path)
+            env.write_figure_data(ROI_collision_episode_path + '/' + str(i_episode)+".csv")
+    else :
+        fail_episode_path = model_path+'fail'
+        create_folder_if_not_exists(fail_episode_path)
+        env.write_figure_data(fail_episode_path + '/' + str(i_episode)+".csv")
 
     training_log = "Episode: {}, total numsteps: {}, episode steps: {}, reward: {}".format(i_episode, total_numsteps, episode_steps, round(episode_reward, 2))
     print(training_log)

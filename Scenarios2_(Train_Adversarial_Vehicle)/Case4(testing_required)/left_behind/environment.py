@@ -44,6 +44,7 @@ class ENV():
 
         self.steering_scale = 0.15
         self.set_initial_position()
+        self.set_collision_state()
 
     # for (get_state_of_target)
         self.state_size = 7
@@ -65,6 +66,11 @@ class ENV():
         self.initial_state_B = [data['Vehicles']['B_Adversarial']['X'], data['Vehicles']['B_Adversarial']['Y']]
         self.initial_state_C = [data['Vehicles']['C_Front']['X'], data['Vehicles']['C_Front']['Y']]
 
+    def set_collision_state(self):
+        self.Ego_Collision = False
+        self.Adv_Collision = False
+        self.Front_Collision = False
+        self.Is_episode_collision = False
         
 
 
@@ -77,6 +83,7 @@ class ENV():
         self.IsCollision = False
         self.figure_data = []
 
+        self.set_collision_state()
         self.set_position(-8,-13)
         self.set_car_control_of_target(0.6, 0)
         self.set_car_control_of_adversarial(0.6, 0, 0)
@@ -86,6 +93,7 @@ class ENV():
         state, _, __, ___, _____ = self.observation()
 
         return state
+
 
     def set_position(self, x, y):
         position = airsim.Vector3r(self.initial_state_A[0], self.initial_state_A[1], -3)
@@ -193,20 +201,19 @@ class ENV():
 #                 5. reward function 
 #----------------------------------------------------------
 
-    def get_reward(self, adversarial_car_state, target_car_state):
-        target_car_x = target_car_state.kinematics_estimated.position.x_val
-        target_car_y = target_car_state.kinematics_estimated.position.y_val
-        adv_car_x = adversarial_car_state.kinematics_estimated.position.x_val
-        adv_car_y = adversarial_car_state.kinematics_estimated.position.y_val
-
+    def get_reward(self, A_state, B_state):
+        target_car_x = A_state[0]
+        target_car_y = A_state[1]
+        adv_car_x = B_state[0]
+        adv_car_y = B_state[1]
 
         done = False
         success = False
 
         distance = math.sqrt( (adv_car_x - target_car_x) ** 2 + (adv_car_y - target_car_y) ** 2 )
-        distance_x = adv_car_x - target_car_x + 4
+        distance_x = adv_car_x - target_car_x
 
-        if( distance > 10 ) :
+        if( distance > 50 ) :
             print("ENDCODE : OUT OF BOUNDARY, distance : " + str(distance))
             done = True
             out_of_bound = -100
@@ -215,36 +222,29 @@ class ENV():
 
         reward = -(distance/5) + out_of_bound
 
-        try:
-            collision_info_1 = self.car.simGetCollisionInfo("A_Target")
-            collision_info_2 = self.car.simGetCollisionInfo("B_Adversarial")
-            collision_info_3 = self.car.simGetCollisionInfo("C_Front")
-        except:
-            collision_info_1 = False
-            collision_info_2 = False
-            collision_info_3 = False
-            print("AIRSIM ERROR_06 : request failed")
+        self.Ego_Collision = self.car.simGetCollisionInfo("A_Target").has_collided
+        self.Adv_Collision = self.car.simGetCollisionInfo("B_Adversarial").has_collided
+        self.Front_Collision = self.car.simGetCollisionInfo("C_Front").has_collided
 
-        if (collision_info_3.has_collided == True) and (collision_info_2.has_collided == True):
+        if (self.Front_Collision == True) and (self.Adv_Collision == True):
             done = True
-            reward -= 100
+            reward -= 1000
             print("ENDCODE : COLLISION_01")
             
 
-        if (collision_info_1.has_collided == True) and (collision_info_2.has_collided == True):
-            self.IsCollision = True
-            # not ROI collision
-            if distance_x < 2.5:
+        if (self.Ego_Collision == True) and (self.Adv_Collision == True):
+            if(self.Is_episode_collision == False):
                 reward += 200
+                self.IsCollision = True
                 done = True
-                success = True
-                print("ENDCODE : COLLISION_02, distance_X : " + str(distance_x))
-            
-            else: # ROI for collision
-                reward += 200
-                done = True
-                success = True
-                print("ENDCODE : COLLISION_03, distance_X : " + str(distance_x))
+
+                print(distance_x)
+
+                # ROI collision
+                if distance_x >= 0.4:
+                    success = True
+                    print("ENDCODE : COLLISION_02, distance_X : " + str(distance_x))
+                self.Is_episode_collision = True
 
         return reward,done,success
 
@@ -300,7 +300,7 @@ class ENV():
 
         state = A_state + B_state + C_state
 
-        reward, done, success = self.get_reward(adversarial_car_state, target_car_state)
+        reward, done, success = self.get_reward(A_state, B_state)
 
         E_reward, E_done, E_success = self.get_Ego_reward(target_car_state, front_car_state)
 
@@ -359,15 +359,18 @@ class ENV():
     def step_for_Ego(self, action):
         if( 0.1 <= action[1] ): Is_brake = 0
         else: Is_brake = 1
+
+        throttle = float(action[0])
         
         while(True):
             try:
-                self.set_car_control_of_target(float(action[0]), Is_brake)
+                self.set_car_control_of_target(throttle, Is_brake)
                 break
             except:
                 print("AIRSIM ERROR_09 : request failed")
         
     def get_Ego_reward(self, target_car_state, front_car_state):
+
         target_car_x = target_car_state.kinematics_estimated.position.x_val
         front_car_x = front_car_state.kinematics_estimated.position.x_val
         

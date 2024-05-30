@@ -1,6 +1,5 @@
 __pycache__/
 .vscode/
-models/
 runs/
 wandb/
 training_logs/
