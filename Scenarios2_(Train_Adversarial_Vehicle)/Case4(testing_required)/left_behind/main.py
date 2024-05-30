@@ -17,7 +17,7 @@ def create_folder_if_not_exists(folder_path):
         os.makedirs(folder_path)
         print(f"폴더 생성: {folder_path}")
     else:
-        print(f"폴더가 이미 존재함: {folder_path}")
+        pass
 
 def append_to_file(file_path, text):
     file_path += '.txt'

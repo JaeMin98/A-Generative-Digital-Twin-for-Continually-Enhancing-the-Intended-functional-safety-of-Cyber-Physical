@@ -238,7 +238,7 @@ class ENV():
                 self.IsCollision = True
                 done = True
 
-                print(distance_x)
+                print("################### Collision ###################")
 
                 # ROI collision
                 if distance_x >= 0.4:
