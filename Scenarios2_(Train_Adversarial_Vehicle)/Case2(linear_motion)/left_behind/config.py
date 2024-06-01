@@ -36,13 +36,13 @@ parser.add_argument('--batch_size', type=int, default=128, metavar='N',
 parser.add_argument('--num_steps', type=int, default=1000000, metavar='N',
                     help='maximum number of steps (default: 1000000)')
 
-parser.add_argument('--hidden_size', type=int, default=64, metavar='N',
+parser.add_argument('--hidden_size', type=int, default=128, metavar='N',
                     help='hidden size (default: 256)')
 
 parser.add_argument('--updates_per_step', type=int, default=1, metavar='N',
                     help='model updates per simulator step (default: 1)')
 
-parser.add_argument('--start_steps', type=int, default=128, metavar='N',
+parser.add_argument('--start_steps', type=int, default=200, metavar='N',
                     help='Steps sampling random actions (default: 10000)')
 
 parser.add_argument('--target_update_interval', type=int, default=1, metavar='N',
