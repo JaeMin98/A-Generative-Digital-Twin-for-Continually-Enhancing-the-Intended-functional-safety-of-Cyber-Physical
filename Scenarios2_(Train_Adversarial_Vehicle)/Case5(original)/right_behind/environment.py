@@ -231,7 +231,7 @@ class ENV():
                 print("################### Collision ###################")
 
                 # ROI collision
-                if distance_x >= 1.05:
+                if distance_x >= 0.5:
                     reward += 400
                     success = True
                     print("ENDCODE : COLLISION_02, distance_X : " + str(distance_x))

@@ -256,7 +256,7 @@ class ENV():
                 # if (collision_info_3.has_collided == True) and (collision_info_2.has_collided == True): print("ENDCODE : COLLISION_01")
                 if (collision_info_1.has_collided == True) and (collision_info_2.has_collided == True) and (self.IsCollision == False):
                     self.IsCollision = True
-                    if distance_x >= 1.05: # ROI collision
+                    if distance_x >= 0.5: # ROI collision
                         self.Is_ROI_Collision = True
         
                 self.update_figure_data((target_car_state, adversarial_car_state, front_car_state))
