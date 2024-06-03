@@ -51,7 +51,7 @@ Ego_agent.load_checkpoint("ego_agent_model/ego_agent.tar")
 now = datetime.datetime.now()
 date_time_str = now.strftime("%Y-%m-%d-%H-%M-%S")
 wandb.init(
-    project="Car_case4",
+    project="Car_case5",
     config=args,
     name="right_behind__"+date_time_str  # 원하는 run 이름 지정
 )
