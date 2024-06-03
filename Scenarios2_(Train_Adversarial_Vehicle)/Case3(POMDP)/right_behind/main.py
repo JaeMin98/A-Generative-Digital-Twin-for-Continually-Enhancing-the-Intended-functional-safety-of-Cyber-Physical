@@ -53,7 +53,7 @@ date_time_str = now.strftime("%Y-%m-%d-%H-%M-%S")
 wandb.init(
     project="Car_case3",
     config=args,
-    name="left_behind__"+date_time_str  # 원하는 run 이름 지정
+    name="right_behind__"+date_time_str  # 원하는 run 이름 지정
 )
 model_path = 'models/{}_SAC_{}_{}_{}/'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
                                                              args.policy, "autotune" if args.automatic_entropy_tuning else "")
