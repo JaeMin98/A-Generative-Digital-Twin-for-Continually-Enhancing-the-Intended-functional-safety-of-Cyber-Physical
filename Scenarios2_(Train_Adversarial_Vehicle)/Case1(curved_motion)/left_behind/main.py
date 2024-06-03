@@ -132,5 +132,8 @@ for i_episode in itertools.count(1):
         env.write_figure_data(fail_episode_path + '/' + str(i_episode)+".csv")
 
     print("Episode: {}, reward: {}, actions: [{}, {}, {}, {}, {}, {}]".format(i_episode, round(reward, 2), action[0], action[1], action[2], action[3], action[4], action[5]))
+    
+    if(success_rate == 100):
+        break
 
-env.reset()
+env.reset(-10,0)
