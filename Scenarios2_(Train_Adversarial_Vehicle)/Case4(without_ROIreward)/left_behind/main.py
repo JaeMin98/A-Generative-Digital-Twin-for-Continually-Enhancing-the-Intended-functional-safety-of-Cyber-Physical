@@ -189,5 +189,8 @@ for i_episode in itertools.count(1):
     training_log = "Episode: {}, total numsteps: {}, episode steps: {}, reward: {}".format(i_episode, total_numsteps, episode_steps, round(episode_reward, 2))
     print(training_log)
     append_to_file(os.path.join(log_path,"training_log"),training_log)
+    
+    if(success_rate == 100):
+        break
 
 env.reset()

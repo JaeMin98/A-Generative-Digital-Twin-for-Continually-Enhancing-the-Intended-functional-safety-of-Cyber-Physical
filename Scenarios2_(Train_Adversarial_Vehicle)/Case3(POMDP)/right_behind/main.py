@@ -190,4 +190,7 @@ for i_episode in itertools.count(1):
     print(training_log)
     append_to_file(os.path.join(log_path,"training_log"),training_log)
 
+    if(success_rate == 100):
+        break
+
 env.reset()

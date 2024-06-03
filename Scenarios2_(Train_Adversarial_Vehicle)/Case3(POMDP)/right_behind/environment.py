@@ -62,9 +62,9 @@ class ENV():
         json_file_path = "/home/smartcps/Documents/AirSim/settings.json"
         with open(json_file_path, 'r') as file:
             data = json.load(file)
-        self.initial_state_A = [data['Vehicles']['A_Target']['X'], data['Vehicles']['A_Target']['Y']]
-        self.initial_state_B = [data['Vehicles']['B_Adversarial']['X'], data['Vehicles']['B_Adversarial']['Y']]
-        self.initial_state_C = [data['Vehicles']['C_Front']['X'], data['Vehicles']['C_Front']['Y']]
+        self.initial_state_A = [data['Vehicles']['A_Target']['X']-1.45, data['Vehicles']['A_Target']['Y']]
+        self.initial_state_B = [data['Vehicles']['B_Adversarial']['X']-1.45, data['Vehicles']['B_Adversarial']['Y']]
+        self.initial_state_C = [data['Vehicles']['C_Front']['X']-1.45, data['Vehicles']['C_Front']['Y']]
 
     def set_collision_state(self):
         self.Ego_Collision = False
@@ -84,7 +84,7 @@ class ENV():
         self.figure_data = []
 
         self.set_collision_state()
-        self.set_position(-8,7)
+        self.set_position(-8, 7)
         self.set_car_control_of_target(0.6, 0)
         self.set_car_control_of_adversarial(0.6, 0, 0)
         self.set_car_control_of_front(0.6, 0)
@@ -96,20 +96,10 @@ class ENV():
 
 
     def set_position(self, x, y):
-        position = airsim.Vector3r(self.initial_state_A[0], self.initial_state_A[1], -3)
-        orientation = airsim.Quaternionr(0, 0, 0, 1)
-        pose = airsim.Pose(position, orientation)
-        self.car.simSetObjectPose("A_Target", pose, True)
-
         position = airsim.Vector3r(x, y, -3)
         orientation = airsim.Quaternionr(0, 0, 0, 1)
         pose = airsim.Pose(position, orientation)
         self.car.simSetObjectPose("B_Adversarial", pose, True)
-
-        position = airsim.Vector3r(self.initial_state_C[0], self.initial_state_C[1], -3)
-        orientation = airsim.Quaternionr(0, 0, 0.0, 1)
-        pose = airsim.Pose(position, orientation)
-        self.car.simSetObjectPose("C_Front", pose, True)
 #----------------------------------------------------------
 #                   3. get state 
 #----------------------------------------------------------
@@ -224,7 +214,6 @@ class ENV():
             done = True
             reward -= 1000
             print("ENDCODE : COLLISION_01")
-            
 
         if (self.Ego_Collision == True) and (self.Adv_Collision == True):
             if(self.Is_episode_collision == False):
@@ -235,7 +224,7 @@ class ENV():
                 print("################### Collision ###################")
 
                 # ROI collision
-                if distance_x >= 0.4:
+                if distance_x >= 1.05:
                     reward += 200
                     success = True
                     print("ENDCODE : COLLISION_02, distance_X : " + str(distance_x))
