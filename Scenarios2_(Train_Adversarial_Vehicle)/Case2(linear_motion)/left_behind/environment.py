@@ -58,9 +58,9 @@ class ENV():
         json_file_path = "/home/smartcps/Documents/AirSim/settings.json"
         with open(json_file_path, 'r') as file:
             data = json.load(file)
-        self.initial_state_A = [data['Vehicles']['A_Target']['X'], data['Vehicles']['A_Target']['Y']]
-        self.initial_state_B = [data['Vehicles']['B_Adversarial']['X'], data['Vehicles']['B_Adversarial']['Y']]
-        self.initial_state_C = [data['Vehicles']['C_Front']['X'], data['Vehicles']['C_Front']['Y']]
+        self.initial_state_A = [data['Vehicles']['A_Target']['X']-1.45, data['Vehicles']['A_Target']['Y']]
+        self.initial_state_B = [data['Vehicles']['B_Adversarial']['X']-1.45, data['Vehicles']['B_Adversarial']['Y']]
+        self.initial_state_C = [data['Vehicles']['C_Front']['X']-1.45, data['Vehicles']['C_Front']['Y']]
 
     def set_ego_agent(self):
         parser = config.parser
@@ -84,20 +84,10 @@ class ENV():
         time.sleep(2)
     
     def set_position(self, x, y , yaw):
-        position = airsim.Vector3r(self.initial_state_A[0], self.initial_state_A[1], -3)
-        orientation = airsim.Quaternionr(0, 0, 0, 1)
-        pose = airsim.Pose(position, orientation)
-        self.car.simSetObjectPose("A_Target", pose, True)
-
         position = airsim.Vector3r(x, y, -3)
         orientation = airsim.Quaternionr(0, 0, yaw, 1)
         pose = airsim.Pose(position, orientation)
         self.car.simSetObjectPose("B_Adversarial", pose, True)
-
-        position = airsim.Vector3r(self.initial_state_C[0], self.initial_state_C[1], -3)
-        orientation = airsim.Quaternionr(0, 0, 0.0, 1)
-        pose = airsim.Pose(position, orientation)
-        self.car.simSetObjectPose("C_Front", pose, True)
 
 #----------------------------------------------------------
 #                   3. get state
@@ -246,12 +236,14 @@ class ENV():
                 A_state = self.get_state_of_target(target_car_state)
                 B_state = self.get_state_of_adversarial(adversarial_car_state)
 
+
                 for i in range(len(self.initial_state_A)):
                     A_state[i] += self.initial_state_A[i]
                     B_state[i] += self.initial_state_B[i]
-        
+
                 #Collision Check
                 distance_x = (B_state[0] - A_state[0])
+                
                 try:
                     collision_info_1 = self.car.simGetCollisionInfo("A_Target")
                     collision_info_2 = self.car.simGetCollisionInfo("B_Adversarial")
@@ -263,11 +255,11 @@ class ENV():
                     print("AIRSIM ERROR_06 : request failed")
 
                 # if (collision_info_3.has_collided == True) and (collision_info_2.has_collided == True): print("ENDCODE : COLLISION_01")
-                if (collision_info_1.has_collided == True) and (collision_info_2.has_collided == True):
+                if (collision_info_1.has_collided == True) and (collision_info_2.has_collided == True) and (self.IsCollision == False):
                     self.IsCollision = True
-                    if distance_x >= 2.5: # ROI collision
+                    if distance_x >= 1.05: # ROI collision
                         self.Is_ROI_Collision = True
-                        
+        
                 self.update_figure_data((target_car_state, adversarial_car_state, front_car_state))
                 break
             except:

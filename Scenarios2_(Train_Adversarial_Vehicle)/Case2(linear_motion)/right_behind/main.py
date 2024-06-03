@@ -132,9 +132,7 @@ for i_episode in itertools.count(1):
 
     print("Episode: {}, reward: {}, actions: [{}, {}, {}, {}]".format(i_episode, round(reward, 2), action[0], action[1], action[2], action[3]))
 
-    if(success_rate >= 90):
-        wandb.finish()
-        env.reset()
-        exit(0)
+    if(success_rate == 100):
+        break
 
-env.reset()
+env.reset(-10,0)

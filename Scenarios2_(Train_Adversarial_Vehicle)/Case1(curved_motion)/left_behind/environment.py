@@ -79,20 +79,10 @@ class ENV():
         time.sleep(2)
     
     def set_position(self, x, y):
-        # position = airsim.Vector3r(0, -3, -3)
-        # orientation = airsim.Quaternionr(0, 0, 0, 1)
-        # pose = airsim.Pose(position, orientation)
-        # self.car.simSetObjectPose("A_Target", pose, True)
-
         position = airsim.Vector3r(x, y, -3)
         orientation = airsim.Quaternionr(0, 0, 0, 1)
         pose = airsim.Pose(position, orientation)
         self.car.simSetObjectPose("B_Adversarial", pose, True)
-
-        # position = airsim.Vector3r(20, -3, -3)
-        # orientation = airsim.Quaternionr(0, 0, 0.0, 1)
-        # pose = airsim.Pose(position, orientation)
-        # self.car.simSetObjectPose("C_Front", pose, True)
 
 #----------------------------------------------------------
 #                   3. get state
