@@ -1,0 +1,6 @@
+__pycache__/
+.vscode/
+runs/
+wandb/
+models/
+training_logs/
