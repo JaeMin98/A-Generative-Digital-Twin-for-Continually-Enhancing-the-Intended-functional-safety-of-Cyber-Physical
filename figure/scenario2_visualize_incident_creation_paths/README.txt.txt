@@ -1,0 +1,1 @@
+Move the csv files (collision, fail, ROI_collision) created for each case in "Scenarios2_(Train_Adversarial_Vehicle)" to the folder and run the python file
