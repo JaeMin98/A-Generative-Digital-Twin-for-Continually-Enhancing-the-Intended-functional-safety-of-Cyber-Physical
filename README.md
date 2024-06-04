@@ -53,30 +53,8 @@ conda update conda
 
 conda create -n car python=3.8
 conda activate car
-```
 
-```bash
-pip install numpy==1.19.5
-pip install pandas==1.1.5
-pip install typing-extensions==3.7.4
-pip install tornado==4.5.3
-pip install grpcio==1.32.0
-pip install absl-py==0.10
-pip install tensorflow==2.4.1
-pip install tensorboard==2.4.1
-pip install jupyter-client==7.1.2
-pip install ipykernel==5.5.6
-pip install torch==1.7.1
-pip install torchvision==0.8.2
-pip install tensorboardX==2.1
-pip install protobuf==3.20.3
-pip install psutil
-pip install PyYAML
-pip install wandb==0.16.6
-pip install airsim
-pip install gym
-pip install matplotlib==3.3.4
-pip install tqdm
+pip install -r requirements.txt 
 ```
 
 가상환경 설정 후 CUDA가 잡히지 않는 다면
@@ -108,3 +86,8 @@ conda list
 
 ### ※ 차량 위치 변경 방법 🌟
 3-2에서 설정한 setting.json의 파일에서 각 차량의 x,y를 변경 후 환경을 재실행
+
+### ⚠️ 주의 사항 ⚠️
+1. airsim.CarClient().getCarState("car_name") 을 활용하여 차량의 상태 정보 반환 시 절대좌표가 반환되지 않을 수 있으니, 항상 확인이 필요함
+2. airsim.CarClient().simSetObjectPose("car_name", pose, True) 를 활용하여 차량 위치를 변경 시 상대좌표로 이동하니, 절대좌표와 매핑하기 위해선 별도 작업이 필요함
+
