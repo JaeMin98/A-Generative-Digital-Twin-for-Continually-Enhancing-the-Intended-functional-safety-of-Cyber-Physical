@@ -37,9 +37,9 @@ cd AirSim
 ### 3. Unreal Engine의 Project(Environments) 설정 ⚙️
 
 1. 'AirSim\Unreal\Environments' 에 아래 폴더(Blocks 4.25) 넣기
-https://drive.google.com/file/d/1kYiO4VMl9_guA7wXr0a67oRY4MTWn6TO/view?usp=sharing
+[https://drive.google.com/file/d/1kYiO4VMl9_guA7wXr0a67oRY4MTWn6TO/view?usp=sharing](https://drive.google.com/file/d/1ffDrS2ZHy_ZWV4l-6hOt2p6JpOKS6Ks9/view?usp=sharing)
 2. '/home/<username>/Documents/AirSim'에 아래 파일(setting.json) 넣기
-https://drive.google.com/file/d/1cTUbTPKsYL4YiGLAqBk7-O0RWVn7LVbc/view?usp=sharing
+[https://drive.google.com/file/d/1cTUbTPKsYL4YiGLAqBk7-O0RWVn7LVbc/view?usp=sharing](https://drive.google.com/file/d/1OrrDHWXQ8SinTrgtNN7ZApoBkdUr9UcD/view?usp=sharing)
 
 
 ### 4. Python library 설치 (가상환경 추천)⚙️
