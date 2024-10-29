@@ -1,21 +1,21 @@
 
-# AirSim 설치 가이드 (Linux) 🛠️
+# AirSim Installation Guide (Linux) 🛠️
 
-## 시스템 요구사항 🖥️
+## System Requirements 🖥️
 
 - **OS**: Ubuntu 18.04 / 20.04
-- **Hardware**: 8GB RAM, 100GB+ 디스크 공간, NVIDIA GPU (CUDA 10.0+)
+- **Hardware**: 8GB RAM, 100GB+ disk space, NVIDIA GPU (CUDA 10.0+)
 
-## 설치 과정 🛠️
+## Installation Steps 🛠️
 
-### 1. 의존성 패키지 설치 📦
+### 1. Install Dependency Packages 📦
 
 ```bash
 sudo apt-get update
 sudo apt-get install -y build-essential cmake git libjpeg-dev libpng-dev libtiff-dev libgl1-mesa-dev libglu1-mesa-dev
 ```
 
-### 2. Unreal Engine 설치 🎮
+### 2. Install Unreal Engine 🎮
 
 ```bash
 git clone -b 4.25 git@github.com:EpicGames/UnrealEngine.git
@@ -25,7 +25,7 @@ cd UnrealEngine
 make
 ```
 
-### 2. AirSim 리포지토리 클론 및 빌드🔄
+### 2. Clone and Build AirSim Repository 🔄
 
 ```bash
 git clone https://github.com/microsoft/AirSim.git
@@ -34,15 +34,11 @@ cd AirSim
 ./build.sh
 ```
 
-### 3. Unreal Engine의 Project(Environments) 설정 ⚙️
+### 3. Set Up Project (Environments) in Unreal Engine ⚙️
 
-1. 'AirSim\Unreal\Environments' 에 아래 폴더(Blocks 4.25) 넣기 >>
-[https://drive.google.com/file/d/1kYiO4VMl9_guA7wXr0a67oRY4MTWn6TO/view?usp=sharing](https://drive.google.com/file/d/1ffDrS2ZHy_ZWV4l-6hOt2p6JpOKS6Ks9/view?usp=sharing)
-2. '/home/<username>/Documents/AirSim'에 아래 파일(setting.json) 넣기 >>
-[https://drive.google.com/file/d/1cTUbTPKsYL4YiGLAqBk7-O0RWVn7LVbc/view?usp=sharing](https://drive.google.com/file/d/1OrrDHWXQ8SinTrgtNN7ZApoBkdUr9UcD/view?usp=sharing)
+1. Place the folder (Blocks 4.25) in 'AirSim\Unreal\Environments' >>[https://drive.google.com/file/d/1kYiO4VMl9_guA7wXr0a67oRY4MTWn6TO/view?usp=sharing](https://drive.google.com/file/d/1ffDrS2ZHy_ZWV4l-6hOt2p6JpOKS6Ks9/view?usp=sharing)2. Place the following file (settings.json) in '/home/<username>/Documents/AirSim' >>[https://drive.google.com/file/d/1cTUbTPKsYL4YiGLAqBk7-O0RWVn7LVbc/view?usp=sharing](https://drive.google.com/file/d/1OrrDHWXQ8SinTrgtNN7ZApoBkdUr9UcD/view?usp=sharing)
 
-
-### 4. Python library 설치 (가상환경 추천)⚙️
+### 4. Install Python Libraries (Virtual Environment Recommended)⚙️
 
 ```bash
 wget https://repo.anaconda.com/archive/Anaconda3-2023.03-Linux-x86_64.sh -O anaconda.sh
@@ -57,37 +53,36 @@ conda activate car
 pip install -r requirements.txt 
 ```
 
-가상환경 설정 후 CUDA가 잡히지 않는 다면
+If CUDA is not detected after setting up the virtual environment:
 ```bash
-conda install -c anaconda cudatoolkit==[원하는 버전]
+conda install -c anaconda cudatoolkit==[desired version]
 ex) conda install -c anaconda cudatoolkit==10.1.243
 
-# CUDA 버전을 못찾는 경우 -c 뒤에 "conda-forge" 옵션 추가
+# Add "conda-forge" after "-c" if the CUDA version cannot be found
 -c conda-forge
 
-# CUDA 먼저 설치하면 아래 커맨드로 어느 정도 상호호환되는 cudnn이 알아서 설치되긴한다.
+# Installing CUDA first will automatically install a compatible version of cudnn to some extent
 conda install -c anaconda cudnn
 
-# CUDA(cudatoolkit) version, CUDNN(cudnn) version 확인
+# Check versions of CUDA (cudatoolkit) and CUDNN (cudnn)
 conda list
 ```
-### 5. AirSim 실행 🌟
+
+### 5. Run AirSim 🌟
 
 ```bash
 .UnrealEngine-4.25/Engine/Binaries/Linux/UE4Editor
 ```
-1. 우측 'More' 버튼 클릭
-2. 우측 하단 'Browse...' 클릭
-3. 3-1에서 추가한 Blocks 4.25 내의 프로젝트 파일을 열기
-4. Convert Option이 주어지면 'Convert-In-Place' 선택하기 (선택지가 없으면 좌측 하단의 see more 클릭)
-5. 프로젝트가 열리면 하단 에서 'DARL' 더블 클릭
-6. 상단 바에서 'Play'버튼 우측에 드롭박스를 열어 'Standalone game' 선택 후 실행
+1. Click the 'More' button on the right
+2. Click 'Browse...' at the bottom right
+3. Open the project file in the Blocks 4.25 folder added in Step 3-1
+4. If the Convert Option is provided, select 'Convert-In-Place' (if not, click "see more" at the bottom left)
+5. Once the project is open, double-click 'DARL' at the bottom
+6. In the top bar, open the dropdown next to the 'Play' button, select 'Standalone game,' and run
 
+### ※ How to Change Car Position 🌟
+Change x and y values for each car in the settings.json file set in Step 3-2, then relaunch the environment.
 
-### ※ 차량 위치 변경 방법 🌟
-3-2에서 설정한 setting.json의 파일에서 각 차량의 x,y를 변경 후 환경을 재실행
-
-### ⚠️ 주의 사항 ⚠️
-1. airsim.CarClient().getCarState("car_name") 을 활용하여 차량의 상태 정보 반환 시 절대좌표가 반환되지 않을 수 있으니, 항상 확인이 필요함
-2. airsim.CarClient().simSetObjectPose("car_name", pose, True) 를 활용하여 차량 위치를 변경 시 상대좌표로 이동하니, 절대좌표와 매핑하기 위해선 별도 작업이 필요함
-
+### ⚠️ Caution ⚠️
+1. When returning vehicle status using airsim.CarClient().getCarState("car_name"), absolute coordinates may not be returned; always verify.
+2. When changing the vehicle position with airsim.CarClient().simSetObjectPose("car_name", pose, True), it moves with relative coordinates. Additional work is needed to map with absolute coordinates.
