@@ -1,3 +1,7 @@
+[Cho, Deun-Sol, Jae-Min Cho, and Won-Tae Kim. "A Generative Digital Twin for Continually Enhancing the Intended Functional Safety of Cyber–Physical Systems." IEEE Transactions on Reliability (2024).](https://ieeexplore.ieee.org/abstract/document/10707656)<br><br>
+
+![Title1](https://github.com/user-attachments/assets/22e9f7d5-f4db-45be-baef-2b00a54c4293)<br>
+![Title2](https://github.com/user-attachments/assets/450708f0-8edd-4eb8-bf83-a4d2468ab983)<br><br>
 
 # AirSim Installation Guide (Linux) 🛠️
 
